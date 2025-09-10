@@ -1,0 +1,49 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import ProjectsGrid from '@/components/react/projects-grid'
+import ProjectsHeader from '@/components/react/projects-header'
+import PaginationComponent from '@/components/ui/pagination'
+import Layout from '@/layouts/Layout.astro'
+import { getAllProjects } from '@/lib/data-utils'
+import type { PaginateFunction } from 'astro'
+
+export async function getStaticPaths({
+  paginate,
+}: {
+  paginate: PaginateFunction
+}) {
+  const allProjects = await getAllProjects()
+  return paginate(allProjects, { pageSize: 6 })
+}
+
+const { page } = Astro.props
+const projectData = await getAllProjects()
+const currentUrl = Astro.url;
+---
+
+<Layout canonicalUrl={currentUrl}>
+  <PageHead slot="head" title="Projects" />
+  <Breadcrumbs
+    items={[
+      { label: 'Projects', href: '/projects', icon: 'lucide:folder' },
+    ]}
+  />
+
+  <section class="max-screen mt-12 px-4 md:px-6">
+    <ProjectsHeader client:load />
+  
+    <div class="mt-12 mb-16">
+      <ProjectsGrid projects={projectData} client:load />
+    </div>
+
+    <div class="mt-16 mb-16">
+      <PaginationComponent
+        currentPage={page.currentPage}
+        totalPages={page.lastPage}
+        baseUrl="/projects/"
+        client:load
+      />
+    </div>
+  </section>
+</Layout>

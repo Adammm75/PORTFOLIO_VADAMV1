@@ -1,0 +1,68 @@
+---
+import { SITE } from '@/consts'
+import { getAllProjects } from '@/lib/data-utils'
+interface Props {
+  title?: string
+  description?: string
+}
+
+const { title = SITE.title, description = SITE.description } = Astro.props
+const image = new URL('/ogImage.png', Astro.site).toString()
+const projects = await getAllProjects()
+---
+
+<title>{`${SITE.title} - ${title}`}</title>
+<meta name="description" content={description} />
+
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={image} />
+<meta property="og:image:alt" content={title} />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content={SITE.locale} />
+<meta property="og:site_name" content={SITE.title} />
+<meta property="og:url" content={Astro.url} />
+
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+<meta name="twitter:image:alt" content={title} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:creator" content={SITE.author} />
+<meta name="twitter:site" content={SITE.href} />
+<meta name="twitter:domain" content={SITE.href} />
+
+<script
+  type="application/ld+json"
+  is:inline
+  set:html={`{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "${SITE.href}#website",
+    "url": "${SITE.href}",
+    "name": "${SITE.title}",
+    "description": "${description}",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "${SITE.href}/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    },
+    "projects": [
+      ${projects
+        .map(
+          (project) => `{
+        "@type": "CreativeWork",
+        "name": "${project.data.name}",
+        "description": "${project.data.description}",
+        "url": "${SITE.href}/projects/${project.id}",
+        "dateCreated": "${project.data.startDate?.toISOString() || new Date().toISOString()}",
+        "author": {
+          "@type": "Person",
+          "name": "${SITE.author}"
+        }
+      }`
+        )
+        .join(',')}
+    ]
+  }`}
+/>
