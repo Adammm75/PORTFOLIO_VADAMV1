@@ -3,7 +3,6 @@ name: 'Automatisation Intelligente avec n8n'
 description: "Développement de workflows d'automatisation avancés avec n8n, intégrant l'Intelligence Artificielle pour optimiser les processus métier et la prise de décision."
 tags: ['Intelligence Artificielle', 'Automatisation RPA & API']
 image: '../../../public/static/Automatisation IA/image_representative_auto_ia.png'
-link: 'https://github.com/example/n8n-ai-automation'
 startDate: '2024-02-01'
 endDate: '2024-07-30'
 ---

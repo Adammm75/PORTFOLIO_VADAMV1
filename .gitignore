@@ -12,3 +12,7 @@ pnpm-debug.log*
 teaser.pptx
 ~$teaser.pptx
 .vercel
+
+# Build output
+.netlify/
+.vercel/

@@ -1,10 +1,11 @@
-import satori from 'satori'
-import { html } from 'satori-html'
+import { SITE } from '@/consts'
 import { Resvg } from '@resvg/resvg-js'
-import { getCollection } from 'astro:content'
 import type { APIContext } from 'astro'
+import { getCollection } from 'astro:content'
 import fs from 'fs'
 import path from 'path'
+import satori from 'satori'
+import { html } from 'satori-html'
 
 const MontserratRegular = fs.readFileSync(
   path.resolve('./public/fonts/_montserrat_regular.ttf'),
@@ -13,27 +14,16 @@ const MontserratBold = fs.readFileSync(
   path.resolve('./public/fonts/_montserrat_bold.ttf'),
 )
 
-const dimensions = {
-  width: 1200,
-  height: 630,
-}
+const dimensions = { width: 1200, height: 630 }
 
-const colors = {
-  background: {
-    from: '#2c2c2c',
-    via: '#181818',
-    to: '#000000',
-  },
-  text: {
-    primary: '#ffffff',
-    secondary: '#b8b8b8',
-    muted: '#7a7a7a',
-  },
-  accent: {
-    primary: 'rgba(112, 112, 112, 0.5)',
-    secondary: 'rgba(21, 21, 21, 0.8)',
-    highlight: 'rgba(255, 255, 255, 0.05)',
-  },
+/** Static mirror of the site tokens — satori cannot read CSS variables. */
+const palette = {
+  ink: '#141619',
+  inkDeep: '#0F1113',
+  text: '#ECEEF1',
+  muted: '#8E959F',
+  accent: '#C9F24D',
+  line: 'rgba(255, 255, 255, 0.12)',
 }
 
 interface Props {
@@ -43,67 +33,67 @@ interface Props {
   tags: string[]
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function truncate(value: string, max: number): string {
+  return value.length > max ? `${value.slice(0, max - 1).trimEnd()}…` : value
+}
+
 export async function GET(context: APIContext) {
   const { title, date, description, tags } = context.props as Props
 
-  const formattedDate = date.toLocaleDateString('en-US', { dateStyle: 'full' })
+  const formattedDate = new Intl.DateTimeFormat('fr-FR', {
+    year: 'numeric',
+    month: 'long',
+  }).format(date)
 
   const tagElements = tags
+    .slice(0, 4)
     .map(
       (tag) =>
-        `<div style="background: rgba(21, 21, 21, 0.5); color: #e0e0e0; font-size: 14px; font-weight: 500; padding: 6px 14px; border-radius: 18px; margin: 4px; display: flex; border: 1px solid rgba(255, 255, 255, 0.1);">#${tag}</div>`,
+        `<div style="display: flex; background: rgba(201, 242, 77, 0.1); border: 1px solid rgba(201, 242, 77, 0.3); color: ${palette.accent}; font-size: 15px; padding: 7px 16px; border-radius: 999px; margin-right: 10px;">${escapeHtml(tag)}</div>`,
     )
     .join('')
 
   const markup = html(
-    `<div
-      style="display: flex; flex-direction: column; width: 100%; height: 100%; border-radius: 24px; overflow: hidden; color: white; border: 1px solid rgba(255, 255, 255, 0.12); position: relative;background: #171717;"
-    >
-      
-      <div style="position: absolute;display: flex; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.01); opacity: 0.6;"></div>
+    `<div style="display: flex; flex-direction: column; width: 100%; height: 100%; background: ${palette.ink}; color: ${palette.text}; position: relative;">
+      <div style="position: absolute; display: flex; width: 620px; height: 620px; top: -280px; right: -180px; border-radius: 50%; background: radial-gradient(circle, rgba(201, 242, 77, 0.16) 0%, rgba(20, 22, 25, 0) 70%);"></div>
+      <div style="position: absolute; display: flex; width: 520px; height: 520px; bottom: -260px; left: -160px; border-radius: 50%; background: radial-gradient(circle, rgba(123, 108, 255, 0.18) 0%, rgba(20, 22, 25, 0) 70%);"></div>
 
-      
-      <div style="position: absolute; width: 350px; height: 350px;display: flex; background: radial-gradient(circle, rgba(250, 255, 100, 0.12) 0%, transparent 70%); top: -100px; right: -50px; border-radius: 50%;"></div>
-
-      
-      <div style="flex: 4; padding: 48px 50px; display: flex; flex-direction: column; justify-content: center; position: relative;">
-        <div style="color: ${colors.text.secondary}; font-size: 16px; display: flex; font-weight: 400; letter-spacing: 0.05em; text-transform: uppercase;">
-          ${formattedDate}
+      <div style="display: flex; flex: 1; flex-direction: column; justify-content: center; padding: 64px 70px;">
+        <div style="display: flex; align-items: center; font-size: 16px; color: ${palette.muted}; letter-spacing: 3px; text-transform: uppercase;">
+          <div style="display: flex; width: 34px; height: 3px; background: ${palette.accent}; margin-right: 16px;"></div>
+          ${escapeHtml(formattedDate)}
         </div>
 
-        <div
-          style="font-size: 60px; display: flex; font-weight: 800; color: ${colors.text.primary}; line-height: 1.15; margin-top: 18px; letter-spacing: -0.01em; width: 95%;"
-        >
-          ${title}
+        <div style="display: flex; font-size: 62px; font-weight: 700; line-height: 1.1; margin-top: 26px; letter-spacing: -1.5px; width: 92%;">
+          ${escapeHtml(truncate(title, 72))}
         </div>
 
-        <div style="width: 70px; height: 4px; display: flex; background: linear-gradient(90deg, rgba(255,255,255,0.7), rgba(255,255,255,0.2)); margin: 20px 0; border-radius: 2px;"></div>
-
-        <div style="color: ${colors.text.secondary}; font-size: 20px;display: flex; margin-top: 16px; line-height: 1.6; width: 90%;">
-          ${description}
+        <div style="display: flex; font-size: 22px; color: ${palette.muted}; line-height: 1.5; margin-top: 22px; width: 82%;">
+          ${escapeHtml(truncate(description, 150))}
         </div>
 
-        <div style="display: flex; margin-top: 28px; flex-wrap: wrap;">
+        <div style="display: flex; margin-top: 32px;">
           ${tagElements}
         </div>
       </div>
 
-      
-      <div
-        style="flex: 1; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; padding: 32px 50px; align-items: center; justify-content: space-between; font-size: 20px; background: rgba(0,0,0,0.3); position: relative;"
-      >
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 28px 70px; border-top: 1px solid ${palette.line}; background: ${palette.inkDeep};">
         <div style="display: flex; align-items: center;">
-          <div style="width: 6px; height: 28px;display: flex; background: rgb(27,27,27); margin-right: 16px; border-radius: 3px;"></div>
-          <span style="color: ${colors.text.secondary}; font-weight: 500; letter-spacing: 0.02em;">cojocarudavid.me</span>
-        </div>
-
-        <div style="display: flex; align-items: center; background: rgba(21,21,21, 0.8); border-radius: 18px; padding: 12px 22px; border: 1px solid rgba(255, 255, 255, 0.1);">
-          <img src="https://res.cloudinary.com/dtkix7qix/image/upload/v1744410119/logo_wkn0ie.png" alt="Logo" style="width: 64px; height: 48px;" width="64" height="48" />
-          <div style="display: flex; flex-direction: column; margin-left: 18px; border-left: 1px solid rgba(255, 255, 255, 0.12); padding-left: 18px;">
-            <span style="color: ${colors.text.primary}; font-weight: 600; font-size: 18px;">David Cojocaru</span>
-            <span style="color: ${colors.text.muted}; font-size: 14px;">cojocaru-david</span>
+          <div style="display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 12px; background: ${palette.accent}; color: ${palette.inkDeep}; font-size: 20px; font-weight: 700;">MA</div>
+          <div style="display: flex; flex-direction: column; margin-left: 18px;">
+            <div style="display: flex; font-size: 20px; font-weight: 700;">${escapeHtml(SITE.author)}</div>
+            <div style="display: flex; font-size: 15px; color: ${palette.muted};">${escapeHtml(SITE.role)}</div>
           </div>
         </div>
+        <div style="display: flex; font-size: 16px; color: ${palette.muted};">${escapeHtml(SITE.href.replace(/^https?:\/\//, ''))}</div>
       </div>
     </div>`,
   ) as unknown as React.ReactNode
@@ -116,23 +106,14 @@ export async function GET(context: APIContext) {
         weight: 400,
         style: 'normal',
       },
-      {
-        name: 'Montserrat',
-        data: MontserratBold,
-        weight: 700,
-        style: 'normal',
-      },
+      { name: 'Montserrat', data: MontserratBold, weight: 700, style: 'normal' },
     ],
     height: dimensions.height,
     width: dimensions.width,
-    debug: false,
   })
 
   const image = new Resvg(svg, {
-    fitTo: {
-      mode: 'width',
-      value: dimensions.width,
-    },
+    fitTo: { mode: 'width', value: dimensions.width },
     font: {
       fontFiles: [
         MontserratRegular.toString('base64'),
@@ -142,11 +123,6 @@ export async function GET(context: APIContext) {
       defaultFontFamily: 'Montserrat',
     },
     logLevel: 'error',
-    background: 'transparent',
-    imageRendering: 1,
-    shapeRendering: 2,
-    textRendering: 1,
-    dpi: 144,
   }).render()
 
   const pngData = image.asPng()
@@ -154,18 +130,8 @@ export async function GET(context: APIContext) {
   return new Response(pngData, {
     headers: {
       'Content-Type': 'image/png',
-      'Content-Disposition': 'inline; filename="social-card.png"',
       'Cache-Control': 'public, max-age=31536000, immutable',
       'Content-Length': pngData.length.toString(),
-      'Surrogate-Key': tags.join(' '),
-      'Query-String-Hash': title.toLowerCase().replace(/\s+/g, '-'),
-      'Cache-Tag': 'social-image',
-      'X-Content-Type-Options': 'nosniff',
-      'Last-Modified': new Date().toUTCString(),
-      Expires: new Date(Date.now() + 31536000000).toUTCString(),
-      ETag: `"${pngData.length}-${Date.now()}"`,
-      'Access-Control-Allow-Origin': '*',
-      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
     },
   })
 }
@@ -173,14 +139,12 @@ export async function GET(context: APIContext) {
 export async function getStaticPaths() {
   const projects = await getCollection('projects')
   return projects.map((project) => ({
-    params: {
-      id: project.id,
-    },
+    params: { id: project.id },
     props: {
       title: project.data.name,
-      date: project.data.startDate || new Date(),
+      date: project.data.startDate ?? new Date(),
       description: project.data.description,
-      tags: project.data.tags,
+      tags: project.data.tags ?? [],
     },
   }))
 }

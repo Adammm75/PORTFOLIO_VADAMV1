@@ -1,134 +1,153 @@
 @reference './global.css';
 
+/* ------------------------------------------------------------------ *
+ *  Long-form project pages
+ * ------------------------------------------------------------------ */
+
 @layer components {
   .prose {
-    @apply text-foreground text-base leading-relaxed;
-    @apply [&>*]:first:mt-0 [&>*]:last:mb-0 [&>section:first-child>*]:mt-0 [&>section:last-child>*]:mb-0;
+    @apply text-foreground text-[1.02rem] leading-[1.75];
+    @apply [&>*]:first:mt-0 [&>*]:last:mb-0;
+    @apply [&>section:first-child>*]:mt-0 [&>section:last-child>*]:mb-0;
 
     p {
-      @apply text-foreground/80 my-6 leading-relaxed not-first:mt-6;
+      @apply text-muted-foreground my-6 leading-[1.8];
     }
 
     h1 {
-      @apply text-foreground mt-0 mb-8 scroll-m-20 text-4xl leading-tight font-bold;
+      @apply font-display text-foreground mt-0 mb-8 scroll-mt-28 text-[clamp(1.9rem,3.4vw,2.75rem)] leading-tight;
     }
 
     h2 {
-      @apply text-foreground mt-10 mb-6 scroll-m-20 text-3xl leading-snug font-semibold;
+      @apply font-display text-foreground mt-16 mb-5 scroll-mt-28 text-[clamp(1.5rem,2.6vw,2rem)] leading-snug;
+      @apply relative pt-8;
+    }
+
+    /* Hairline above every H2 — the rhythm marker of the article */
+    h2::before {
+      content: '';
+      @apply bg-border absolute top-0 left-0 h-px w-full;
     }
 
     h3 {
-      @apply text-foreground mt-8 mb-5 scroll-m-20 text-2xl leading-snug font-medium;
+      @apply font-display text-foreground mt-10 mb-4 scroll-mt-28 text-xl leading-snug;
     }
 
     h4 {
-      @apply text-foreground mt-8 mb-4 scroll-m-20 text-xl leading-normal font-medium;
+      @apply text-foreground mt-8 mb-3 scroll-mt-28 text-lg font-semibold;
     }
 
-    h5 {
-      @apply text-foreground mt-6 mb-4 scroll-m-20 text-lg leading-normal font-medium;
-    }
-
+    h5,
     h6 {
-      @apply text-foreground mt-6 mb-4 scroll-m-20 text-base leading-normal font-medium;
+      @apply text-foreground mt-6 mb-3 scroll-mt-28 text-base font-semibold;
     }
 
     a {
-      @apply text-primary decoration-primary hover:decoration-primary/80 font-medium break-words underline underline-offset-4 transition-colors duration-200 ease-in-out;
+      @apply text-primary decoration-primary/40 hover:decoration-primary font-medium underline underline-offset-[3px] transition-colors duration-200;
     }
 
     strong {
       @apply text-foreground font-semibold;
     }
 
+    em {
+      @apply italic;
+    }
+
     ul {
-      @apply marker:text-primary/50 my-6 ml-8 list-disc [&>li]:mt-3;
+      @apply marker:text-primary my-6 ml-5 list-disc space-y-2.5;
     }
 
     ol {
-      @apply marker:text-primary/50 my-6 ml-8 list-decimal [&>li]:mt-3;
+      @apply marker:text-primary my-6 ml-5 list-decimal space-y-2.5;
       @apply [&[type='A']]:list-[upper-alpha] [&[type='I']]:list-[upper-roman] [&[type='a']]:list-[lower-alpha] [&[type='i']]:list-[lower-roman];
     }
 
     li {
-      @apply text-foreground/80 pl-3 leading-relaxed [&>p]:my-0;
+      @apply text-muted-foreground pl-2 leading-[1.75] [&>p]:my-2;
     }
 
     ul ul,
     ol ol,
     ul ol,
     ol ul {
-      @apply marker:text-primary/30 my-3 ml-8;
+      @apply my-2.5 ml-5;
     }
 
-    code {
-      @apply bg-muted/60 text-foreground relative rounded-md px-2 py-1 font-mono text-sm font-medium;
-      @apply [&>span[data-line='']>*]:text-(--shiki-light) dark:[&>span[data-line='']>*]:text-(--shiki-dark);
+    code:not(pre code) {
+      @apply bg-muted text-foreground border-border rounded-md border px-1.5 py-0.5 font-mono text-[0.85em];
     }
 
     pre {
-      @apply bg-muted/60 text-foreground max-w-full overflow-x-auto rounded-lg p-4 font-mono text-sm;
-      @apply [&>span[data-line='']>*]:text-(--shiki-light) dark:[&>span[data-line='']>*]:text-(--shiki-dark);
+      @apply bg-card border-border my-8 max-w-full overflow-x-auto rounded-xl border p-4 font-mono text-sm;
     }
 
     .expressive-code {
-      @apply my-8 [&_.title]:font-semibold!;
+      @apply my-8;
     }
 
     blockquote {
-      @apply text-muted-foreground bg-muted/20 my-8 rounded-md border-l-4 pl-6 italic;
-      @apply py-4 text-sm leading-relaxed;
-      @apply [&>p]:my-0 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0;
+      @apply text-foreground/90 border-primary my-8 rounded-r-xl border-l-2 py-2 pl-6 italic;
+      background: color-mix(in oklab, var(--primary) 6%, transparent);
+      @apply [&>p]:my-2 [&>p]:not-italic;
     }
 
     hr {
-      @apply border-border my-10 border-t-2;
+      @apply border-border my-12;
     }
 
+    /* Tables scroll horizontally instead of breaking the layout */
     table {
-      @apply my-10 w-full border-collapse overflow-hidden rounded-lg text-sm shadow-sm;
+      @apply border-border my-8 block w-full overflow-x-auto border-collapse rounded-xl border text-sm;
     }
 
     thead {
-      @apply bg-muted/30 text-foreground font-semibold;
+      @apply bg-muted text-foreground;
     }
 
     th {
-      @apply border px-6 py-3 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right;
+      @apply border-border border-b px-4 py-3 text-left font-semibold whitespace-nowrap;
+      @apply [&[align=center]]:text-center [&[align=right]]:text-right;
     }
 
     tbody tr {
-      @apply border-muted-foreground/20 even:bg-muted/50 odd:bg-muted/30 border-b;
+      @apply border-border border-b last:border-0;
+    }
+
+    tbody tr:hover {
+      background: color-mix(in oklab, var(--primary) 4%, transparent);
     }
 
     td {
-      @apply border px-6 py-3 text-left [&[align=center]]:text-center [&[align=right]]:text-right;
+      @apply text-muted-foreground px-4 py-3 text-left align-top;
+      @apply [&[align=center]]:text-center [&[align=right]]:text-right;
     }
 
     img,
     video {
-      @apply my-10 rounded-lg shadow-md;
+      @apply border-border my-10 w-full rounded-xl border;
     }
 
     figcaption {
-      @apply text-muted-foreground mt-4 text-sm italic;
+      @apply text-muted-foreground mt-3 text-center text-sm;
     }
 
     kbd {
-      @apply text-foreground bg-muted border-border rounded-md border px-3 py-1 font-mono text-xs font-medium shadow-sm;
-      @apply [&>span[data-line='']>*]:text-(--shiki-light) dark:[&>span[data-line='']>*]:text-(--shiki-dark);
+      @apply text-foreground bg-muted border-border rounded-md border px-2 py-0.5 font-mono text-xs;
     }
 
     .katex-display {
-      @apply my-8 overflow-x-auto overflow-y-hidden py-3 tracking-normal;
-      @apply [&>span[data-line='']>*]:text-(--shiki-light) dark:[&>span[data-line='']>*]:text-(--shiki-dark);
+      @apply my-8 overflow-x-auto overflow-y-hidden py-3;
     }
 
-    .katex {
-      @apply text-foreground;
-    }
+    .katex,
     .katex * {
       @apply text-foreground;
+    }
+
+    /* remark-sectionize wraps each heading level in a <section> */
+    section {
+      @apply scroll-mt-28;
     }
   }
 }

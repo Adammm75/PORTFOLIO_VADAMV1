@@ -1,122 +1,142 @@
-import type { IconMap, SocialLink, Site } from '@/types'
-
+import { SITE_URL } from '@/site.config'
+import type { NavLink, Site, SocialLink, TechnologyGroups } from '@/types'
 
 export const SITE: Site = {
   title: 'Mekkiou Adam',
+  shortTitle: 'Adam',
+  role: 'Développeur IA',
   description:
-    "Je suis un jeune <span style='color: #FCD34D; font-weight: 600;'>Développeur Informatique</span> avec une passion pour la conception d'applications innovantes. J'ai de l'expérience dans la <span style='color: #FCD34D; font-weight: 600;'>Data Science</span>, l'<span style='color: #FCD34D; font-weight: 600;'>IA</span> et le <span style='color: #FCD34D; font-weight: 600;'>Machine Learning</span>. Je suis un passionné de la technologie et de la programmation.",
-  href: 'https://cojocarudavid.me',
-	author: 'Mekkiou Adam',
-  locale: 'en-US',
-  location: 'France',
+    "Je suis un jeune <em>Développeur Informatique</em> avec une passion pour la conception d'applications innovantes. J'ai de l'expérience dans la <em>Data Science</em>, l'<em>IA</em> et le <em>Machine Learning</em>. Je suis un passionné de la technologie et de la programmation.",
+  descriptionPlain:
+    "Développeur Informatique passionné par la conception d'applications innovantes, avec de l'expérience en Data Science, en IA et en Machine Learning.",
+  href: SITE_URL,
+  author: 'Mekkiou Adam',
+  locale: 'fr_FR',
+  lang: 'fr',
+  location: 'Île-de-France, France',
+  email: 'adam.mekkiou@outlook.fr',
 }
 
-export const NAV_LINKS: SocialLink[] = [
-  {
-    href: '/',
-    label: 'accueil',
-  },
-  {
-    href: '/projects',
-    label: 'projets',
-  },
-  {
-    href: '/#parcours',
-    label: 'mon parcours',
-  },
-  {
-    href: '/#contact',
-    label: 'contact',
-  },
+/** Rotating job titles in the hero. */
+export const ROLES: string[] = [
+  'Développeur IA',
+  'Data Scientist',
+  'Ingénieur Automatisation',
+  'Développeur Full Stack',
+]
+
+export const NAV_LINKS: NavLink[] = [
+  { href: '/#accueil', label: 'accueil', sectionId: 'accueil' },
+  { href: '/#expertise', label: 'expertise', sectionId: 'expertise' },
+  { href: '/#parcours', label: 'parcours', sectionId: 'parcours' },
+  { href: '/projects', label: 'projets' },
+  { href: '/#contact', label: 'contact', sectionId: 'contact' },
 ]
 
 export const SOCIAL_LINKS: SocialLink[] = [
   {
-    href: 'https://github.com/cojocaru-david?ref=personal-website',
+    href: 'https://www.linkedin.com/in/mekkiou-a-b64021262/',
+    label: 'LinkedIn',
+    handle: 'mekkiou-adam',
+  },
+  {
+    href: 'https://github.com/Adammm75',
     label: 'GitHub',
+    handle: '@Adammm75',
   },
   {
-    href: 'mailto:contact@cojocarudavid.me',
+    href: `mailto:${SITE.email}`,
     label: 'Email',
-  },
-  {
-    href: '+40 764 132 266',
-    label: 'Phone',
-  },
-  {
-    href: 'https://www.instagram.com/david._.cojo?ref=personal-website',
-    label: 'Instagram',
+    handle: SITE.email,
   },
   {
     href: '/rss.xml',
     label: 'RSS',
+    handle: 'Flux des projets',
   },
 ]
 
-export const ICON_MAP: IconMap = {
-  Website: 'lucide:globe',
-  GitHub: 'lucide:github',
-  Instagram: 'lucide:instagram',
-  Phone: 'lucide:phone',
-  Email: 'lucide:mail',
-  RSS: 'lucide:rss',
-}
+/** Downloadable documents, served from /public/static. */
+export const DOCUMENTS = {
+  cv: {
+    href: '/static/CV_Mekkiou_Adam_M1.pdf',
+    label: 'Télécharger mon CV',
+    fileName: 'CV_Mekkiou_Adam_M1.pdf',
+  },
+  recommendations: {
+    href: '/static/Lettres_Recommandation_Mekkiou_Adam.pdf',
+    label: 'Lettres de recommandation',
+    fileName: 'Lettres_Recommandation_Mekkiou_Adam.pdf',
+  },
+} as const
 
-export interface Category {
-  text: string
-  logo: string
-}
+/** Headline figures shown under the hero. */
+export const FACTS: { value: string; label: string }[] = [
+  { value: '2 ans', label: "d'alternance en entreprise" },
+  { value: 'Master', label: 'MIAGE — SI & données' },
+  { value: 'IA / RPA', label: 'LLM, RAG, automatisation' },
+  { value: 'Île-de-France', label: 'disponible sur site & remote' },
+]
 
-export type Technologies = {
-  'Web Development': Category[]
-  'Development Tools': Category[]
-  'Hosting and Cloud Services': Category[]
-  'Operating Systems': Category[]
-  'Other Programming Languages and Technologies': Category[]
-  'Web Servers': Category[]
-  Databases: Category[]
-  'Other Software': Category[]
-}
+export const EXPERTISE_AREAS: string[] = [
+  "Développement d'applications IA",
+  'Systèmes RAG (Retrieval-Augmented Generation)',
+  'Fine-tuning de modèles LLM',
+  'Chatbots et assistants virtuels',
+  'Formation et sensibilisation à l’IA',
+]
 
-export const technologies: Technologies = {
-  'Web Development': [
-    { text: 'HTML', logo: 'mdi:language-html5' },
-    { text: 'JavaScript', logo: 'mdi:language-javascript' },
-    { text: 'CSS', logo: 'mdi:language-css3' },
-    { text: 'PHP', logo: 'mdi:language-php' },
-    { text: 'Astro', logo: 'simple-icons:astro' },
-    { text: 'Tailwind CSS', logo: 'mdi:tailwind' },
+/**
+ * Technologies actually used across the experiences and projects listed on
+ * this site — grouped for the marquee.
+ */
+export const technologies: TechnologyGroups = {
+  Langages: [
+    { text: 'Python', logo: 'si:python' },
+    { text: 'JavaScript', logo: 'si:javascript' },
+    { text: 'TypeScript', logo: 'si:typescript' },
+    { text: 'Java', logo: 'si:openjdk' },
+    { text: 'SQL', logo: 'lucide:database' },
+    { text: 'PHP', logo: 'si:php' },
+    { text: 'HTML', logo: 'si:html5' },
+    { text: 'CSS', logo: 'si:css3' },
   ],
-  'Development Tools': [
-    { text: 'Visual Studio Code', logo: 'mdi:visual-studio-code' },
-    { text: 'Git', logo: 'mdi:git' },
+  'IA & Data Science': [
+    { text: 'TensorFlow', logo: 'si:tensorflow' },
+    { text: 'PyTorch', logo: 'si:pytorch' },
+    { text: 'Scikit-learn', logo: 'si:scikitlearn' },
+    { text: 'Pandas', logo: 'si:pandas' },
+    { text: 'NumPy', logo: 'si:numpy' },
+    { text: 'OpenAI API', logo: 'si:openai' },
+    { text: 'LangChain', logo: 'si:langchain' },
+    { text: 'Jupyter', logo: 'si:jupyter' },
   ],
-  'Hosting and Cloud Services': [
-    { text: 'DigitalOcean', logo: 'mdi:digital-ocean' },
-    { text: 'Cloudflare', logo: 'cib:cloudflare' },
-    { text: 'Netlify', logo: 'cib:netlify' },
+  'Web & Frameworks': [
+    { text: 'React', logo: 'si:react' },
+    { text: 'Astro', logo: 'si:astro' },
+    { text: 'Tailwind CSS', logo: 'si:tailwindcss' },
+    { text: 'Node.js', logo: 'si:nodejs' },
+    { text: 'Spring Boot', logo: 'si:springboot' },
+    { text: 'JavaFX', logo: 'lucide:app-window' },
+    { text: 'WordPress', logo: 'si:wordpress' },
   ],
-  'Operating Systems': [
-    { text: 'Windows', logo: 'mdi:windows' },
-    { text: 'Ubuntu', logo: 'mdi:ubuntu' },
+  'Automatisation & BI': [
+    { text: 'n8n', logo: 'si:n8n' },
+    { text: 'Make', logo: 'si:make' },
+    { text: 'Power Automate', logo: 'lucide:workflow' },
+    { text: 'Power BI', logo: 'lucide:bar-chart-3' },
+    { text: 'Selenium', logo: 'si:selenium' },
+    { text: 'REST APIs', logo: 'lucide:webhook' },
   ],
-  'Other Programming Languages and Technologies': [
-    { text: 'Lua', logo: 'mdi:language-lua' },
-    { text: 'Golang', logo: 'mdi:language-go' },
-    { text: 'Node.js', logo: 'mdi:nodejs' },
-  ],
-  'Web Servers': [
-    { text: 'Apache', logo: 'cib:apache' },
-    { text: 'Nginx', logo: 'cib:nginx' },
-  ],
-  Databases: [
-    { text: 'MySQL', logo: 'cib:mysql' },
-    { text: 'MongoDB', logo: 'cib:mongodb' },
-  ],
-  'Other Software': [
-    { text: 'Discord', logo: 'mdi:discord' },
-    { text: 'Spotify', logo: 'mdi:spotify' },
-    { text: 'Visual Studio', logo: 'mdi:visual-studio' },
-    { text: 'Brave', logo: 'cib:brave' },
+  'Données & Outils': [
+    { text: 'MySQL', logo: 'si:mysql' },
+    { text: 'PostgreSQL', logo: 'si:postgresql' },
+    { text: 'MongoDB', logo: 'si:mongodb' },
+    { text: 'Git', logo: 'si:git' },
+    { text: 'GitHub', logo: 'si:github' },
+    { text: 'Docker', logo: 'si:docker' },
+    { text: 'Postman', logo: 'si:postman' },
+    { text: 'Jira', logo: 'si:jira' },
+    { text: 'Linux', logo: 'si:linux' },
   ],
 }

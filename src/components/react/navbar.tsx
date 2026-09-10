@@ -1,305 +1,275 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import Link from './link'
-
-import { NAV_LINKS, SITE } from '../../consts'
+import { NAV_LINKS, SITE, SOCIAL_LINKS } from '@/consts'
 import { cn } from '@/lib/utils'
-import debounce from 'lodash.debounce'
-import Logo from '../ui/logo'
-import { Button } from '@/components/ui/button'
-import { Menu, X } from 'lucide-react'
-import { Separator } from '../ui/separator'
+import Logo from '@/components/ui/logo'
+import ThemeSwitch from '@/components/react/theme-switch'
+import { EASE } from '@/components/react/motion-primitives'
+import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
+import { ArrowUpRight, Command, Menu, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 
-const Navbar = () => {
-  const [scrollLevel, setScrollLevel] = useState(0)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [activePath, setActivePath] = useState("/")
-  
-  useEffect(() => {
-    setActivePath(window.location.pathname)
-    
-    const handleRouteChange = () => {
-      setActivePath(window.location.pathname)
-    }
-    
-    window.addEventListener('popstate', handleRouteChange)
-    return () => {
-      window.removeEventListener('popstate', handleRouteChange)
-    }
-  }, [])
-  
-  useEffect(() => {
-    const handleResize = debounce(() => {
-      const isMobileView = window.matchMedia('(max-width: 768px)').matches
-      setIsMobile(isMobileView)
-      if (!isMobileView && mobileMenuOpen) {
-        setMobileMenuOpen(false)
-      }
-    }, 100)
+const SECTION_IDS = NAV_LINKS.map((link) => link.sectionId).filter(
+  (id): id is string => Boolean(id),
+)
 
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [mobileMenuOpen])
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [pathname, setPathname] = useState('/')
+  const [isMac, setIsMac] = useState(false)
+
+  const { scrollYProgress } = useScroll()
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 180,
+    damping: 30,
+    restDelta: 0.001,
+  })
 
   useEffect(() => {
-    const handleScroll = debounce(() => {
-      const scrollY = window.scrollY
-      setScrollLevel(
-        scrollY > 500 ? 4 : scrollY > 300 ? 3 : scrollY > 150 ? 2 : scrollY > 0 ? 1 : 0
-      )
-      setIsScrolled(scrollY > 0)
-    }, 50)
+    setPathname(window.location.pathname)
+    setIsMac(/Mac|iPhone|iPad/.test(navigator.userAgent))
 
-    window.addEventListener('scroll', handleScroll)
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
+    const handleScroll = () => setScrolled(window.scrollY > 12)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Scroll spy: highlights the section currently crossing the middle band.
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    const sections = SECTION_IDS.map((id) => document.getElementById(id)).filter(
+      (node): node is HTMLElement => Boolean(node),
+    )
+    if (sections.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+        if (visible) setActiveSection(visible.target.id)
+      },
+      { rootMargin: '-45% 0px -45% 0px', threshold: [0, 0.25, 0.5, 1] },
+    )
+
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => {
       document.body.style.overflow = ''
     }
-  }, [mobileMenuOpen])
+  }, [menuOpen])
 
-  const sizeVariants: Record<number, { width: string }> = {
-    0: { width: '100%' },
-    1: { width: '90%' },
-    2: { width: '80%' },
-    3: { width: '70%' },
-    4: { width: '50%' },
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [menuOpen])
+
+  /**
+   * In-page links scroll smoothly when the target exists on this page;
+   * otherwise the browser follows the href and lands on the anchor.
+   */
+  const handleNavClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>, sectionId?: string) => {
+      if (!sectionId) return
+      const target = document.getElementById(sectionId)
+      if (!target) return
+
+      event.preventDefault()
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      history.replaceState(null, '', `#${sectionId}`)
+      setActiveSection(sectionId)
+      setMenuOpen(false)
+    },
+    [],
+  )
+
+  const isActive = (href: string, sectionId?: string) => {
+    if (sectionId) return activeSection === sectionId
+    return href !== '/' && pathname.startsWith(href)
   }
 
-  const menuVariants = {
-    closed: {
-      opacity: 0,
-      y: "-100%",
-      transition: {
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1],
-      }
-    },
-    open: {
-      opacity: 1,
-      y: "0%",
-      transition: {
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1],
-      }
-    }
+  const openPalette = () => {
+    setMenuOpen(false)
+    window.dispatchEvent(new CustomEvent('command-palette:open'))
   }
 
   return (
     <>
       <motion.header
-        aria-label="Navigation"
-        role="navigation"
-        layout={!isMobile}
-        initial={sizeVariants[0]}
-        animate={isMobile ? sizeVariants[0] : sizeVariants[scrollLevel]}
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
         className={cn(
-          'fixed left-1/2 z-30 -translate-x-1/2 transform backdrop-blur-lg',
-          'bg-background/80 border-0',
-          'rounded-none shadow-none transition-all duration-300 ease-in-out',
-          'border border-transparent w-full',
-          isScrolled && !isMobile && 'rounded-full',
-          isScrolled && !isMobile && 'backdrop-blur-md',
-          isScrolled && !isMobile && 'border-foreground/10',
-          isScrolled && !isMobile && 'border',
-          isScrolled && !isMobile && 'bg-background/80',
-          isScrolled && !isMobile && 'max-w-[calc(100vw-5rem)]',
-          !isMobile && 'top-2 lg:top-4 xl:top-6',
-          isMobile && 'top-0',
-          isMobile && 'rounded-none',
-          isMobile && 'border-0',
-          isMobile && 'shadow-none',
-          isMobile && 'border-0'
+          'fixed inset-x-0 top-0 z-[90] transition-colors duration-500',
+          scrolled || menuOpen
+            ? 'bg-background/70 border-border border-b backdrop-blur-xl'
+            : 'border-b border-transparent',
         )}
+        style={{ height: 'var(--nav-height)' }}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 p-6">
-          <Link
+        <div className="shell flex h-full items-center justify-between gap-4">
+          <a
             href="/"
-            className="font-custom flex shrink-0 items-center gap-2 text-xl font-bold"
-            aria-label="Home"
-            title="Home"
-            navigation="true"
+            className="group flex items-center gap-3"
+            aria-label={`${SITE.title} — accueil`}
           >
-            <Logo className="h-8 w-8" />
-            <span className={
-              'transition-opacity duration-200 ease-in-out text-foreground/90 dark:text-white'}>
-              {SITE.title}
+            <Logo />
+            <span className="hidden flex-col leading-none sm:flex">
+              <span className="font-display text-[0.95rem] tracking-tight">
+                {SITE.title}
+              </span>
+              <span className="text-muted-foreground font-mono text-[0.6rem] tracking-[0.18em] uppercase">
+                {SITE.role}
+              </span>
             </span>
-          </Link>
+          </a>
 
-          <div className="flex items-center gap-4 md:gap-6">
-            <nav className="hidden items-center gap-8 md:flex" aria-label="Main navigation" role="navigation">
-              {NAV_LINKS.map((item) => {
-                const isActive = activePath.startsWith(item.href) && item.href !== "/";
-                return (
-                  <motion.div
-                    key={item.href}
-                    whileHover={{ scale: 1.05 }}
-                    className="relative"
-                  >
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "text-base font-medium capitalize transition-colors duration-200",
-                        "relative py-2 px-3",
-                        "after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-yellow-400 after:transition-all after:duration-300",
-                        "hover:after:w-full hover:text-foreground",
-                        isActive 
-                          ? "text-foreground after:w-full after:bg-yellow-400" 
-                          : "text-foreground/70"
-                      )}
-                      onClick={(e: React.MouseEvent) => {
-                        if (item.href === '#contact') {
-                          e.preventDefault();
-                          const contactSection = document.getElementById('contact');
-                          if (contactSection) {
-                            contactSection.scrollIntoView({ 
-                              behavior: 'smooth',
-                              block: 'start'
-                            });
-                          }
-                        } else if (item.href === '#parcours') {
-                          e.preventDefault();
-                          const parcoursSection = document.getElementById('parcours');
-                          if (parcoursSection) {
-                            parcoursSection.scrollIntoView({ 
-                              behavior: 'smooth',
-                              block: 'start'
-                            });
-                          }
-                        } else if (item.href.startsWith('#')) {
-                          // Handle other hash links
-                          e.preventDefault();
-                        } else {
-                          // For non-hash links, use native navigation
-                          setActivePath(item.href);
-                          // Force reload to ensure proper routing
-                          if (window.location.pathname !== item.href) {
-                            window.location.href = item.href;
-                          }
-                        }
-                      }}
-                    >
-                      {item.label}
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </nav>
+          <nav
+            aria-label="Navigation principale"
+            className="border-border bg-card/40 hidden items-center gap-1 rounded-full border p-1 backdrop-blur-md lg:flex"
+          >
+            {NAV_LINKS.map((link) => {
+              const active = isActive(link.href, link.sectionId)
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(event) => handleNavClick(event, link.sectionId)}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'relative rounded-full px-4 py-2 text-sm font-medium capitalize transition-colors duration-300',
+                    active
+                      ? 'text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="nav-pill"
+                      className="bg-primary absolute inset-0 rounded-full"
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10">{link.label}</span>
+                </a>
+              )
+            })}
+          </nav>
 
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={openPalette}
+              data-cursor-label="⌘K"
+              aria-label="Ouvrir la recherche rapide"
+              className="border-border text-muted-foreground hover:text-foreground hover:border-accent-line hidden items-center gap-2 rounded-full border py-2 pr-2 pl-3.5 text-xs transition-colors duration-300 md:flex"
+            >
+              <span className="font-mono tracking-wide">Rechercher</span>
+              <kbd className="bg-muted text-muted-foreground flex items-center gap-1 rounded-md px-1.5 py-0.5 font-mono text-[0.65rem]">
+                {isMac ? <Command className="size-3" /> : <span>Ctrl</span>}
+                <span>K</span>
+              </kbd>
+            </button>
 
-            
-            {isMobile && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                className={
-                  "ml-1 h-9 w-9 rounded-full p-0 transition-colors duration-200 ease-in-out"
-                }
-              >
-                {mobileMenuOpen ? (
-                  <X className="h-5 w-5" />
-                ) : (
-                  <Menu className="h-5 w-5" />
-                )}
-              </Button>
-            )}
+            <ThemeSwitch />
+
+            <a
+              href="/#contact"
+              onClick={(event) => handleNavClick(event, 'contact')}
+              data-cursor-label="écrire"
+              className="bg-foreground text-background hover:bg-primary hover:text-primary-foreground sheen relative hidden overflow-hidden rounded-full px-5 py-2.5 text-sm font-semibold transition-colors duration-300 sm:inline-flex sm:items-center sm:gap-1.5"
+            >
+              Me contacter
+              <ArrowUpRight className="size-4" />
+            </a>
+
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              className="border-border text-foreground grid size-10 place-items-center rounded-full border lg:hidden"
+            >
+              {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
           </div>
         </div>
+
+        <motion.div
+          aria-hidden="true"
+          style={{ scaleX: progress }}
+          className="bg-primary absolute inset-x-0 bottom-0 h-px origin-left"
+        />
       </motion.header>
-      
+
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {menuOpen && (
           <motion.div
+            id="mobile-menu"
             key="mobile-menu"
-            initial="closed"
-            animate="open"
-            exit="closed"
-            variants={menuVariants}
-            className="fixed inset-0 z-20 flex flex-col items-center justify-start bg-background border-0 shadow-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-background/95 fixed inset-0 z-[80] backdrop-blur-2xl lg:hidden"
           >
-            <div className="flex flex-col items-center justify-start h-full pt-24 w-full p-6">
-              <nav className="flex flex-col items-center justify-start gap-1 w-full">
-                {NAV_LINKS.map((item, i) => (
-                  <motion.div
-                    key={item.href}
-                    custom={i}
-                    className="w-full text-start"
+            <div className="shell flex h-full flex-col justify-between pt-[calc(var(--nav-height)+2rem)] pb-10">
+              <nav aria-label="Navigation mobile" className="flex flex-col">
+                {NAV_LINKS.map((link, index) => (
+                  <motion.a
+                    key={link.href}
+                    href={link.href}
+                    onClick={(event) => {
+                      handleNavClick(event, link.sectionId)
+                      setMenuOpen(false)
+                    }}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.06 * index, duration: 0.5, ease: EASE }}
+                    className="border-border font-display flex items-center justify-between border-b py-5 text-3xl capitalize"
                   >
-                    <Link
-                      href={item.href}
-                      onClick={(e: React.MouseEvent) => {
-                        if (item.href === '#contact') {
-                          e.preventDefault();
-                          const contactSection = document.getElementById('contact');
-                          if (contactSection) {
-                            contactSection.scrollIntoView({ 
-                              behavior: 'smooth',
-                              block: 'start'
-                            });
-                          }
-                        } else if (item.href === '#parcours') {
-                          e.preventDefault();
-                          const parcoursSection = document.getElementById('parcours');
-                          if (parcoursSection) {
-                            parcoursSection.scrollIntoView({ 
-                              behavior: 'smooth',
-                              block: 'start'
-                            });
-                          }
-                        } else if (item.href.startsWith('#')) {
-                          // Handle other hash links
-                          e.preventDefault();
-                        } else {
-                          // For non-hash links, use native navigation
-                          if (window.location.pathname !== item.href) {
-                            window.location.href = item.href;
-                          }
-                        }
-                        setMobileMenuOpen(false);
-                      }}
-                      className="dark:text-white text-lg font-bold font-custom capitalize dark:hover:text-white/80 transition-colors inline-block py-2 relative group"
-                    >
-                      {item.label}
-                      <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-yellow-400 group-hover:w-full transition-all duration-300 ease-in-out"></span>
-                    </Link>
-                  </motion.div>
+                    <span>{link.label}</span>
+                    <span className="text-muted-foreground font-mono text-xs">
+                      0{index + 1}
+                    </span>
+                  </motion.a>
                 ))}
               </nav>
-              
+
               <motion.div
-                custom={NAV_LINKS.length + 1}
-                className="mt-auto flex flex-col items-center gap-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-col gap-6"
               >
-                <div className="flex flex-wrap items-center justify-center gap-x-2 text-center">
-                  <span className="text-muted-foreground text-sm" aria-label="copyright">
-                    2020 - {new Date().getFullYear()} &copy; All rights reserved.
-                  </span>
-                  <Separator orientation="vertical" className="hidden h-4! sm:block" />
-                  <p className="text-muted-foreground text-sm" aria-label="open-source description">
-                    <Link
-                      href="https://github.com/cojocaru-david/portfolio"
-                      class="text-foreground"
-                      external
-                      underline>Open-source</Link
-                    > under MIT license
-                  </p>
+                <button
+                  type="button"
+                  onClick={openPalette}
+                  className="border-border text-muted-foreground w-full rounded-full border py-3 font-mono text-xs tracking-widest uppercase"
+                >
+                  Recherche rapide
+                </button>
+                <div className="flex flex-wrap gap-x-5 gap-y-2">
+                  {SOCIAL_LINKS.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target={social.href.startsWith('http') ? '_blank' : undefined}
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary link-underline text-sm"
+                    >
+                      {social.label}
+                    </a>
+                  ))}
                 </div>
               </motion.div>
             </div>
@@ -309,5 +279,3 @@ const Navbar = () => {
     </>
   )
 }
-
-export default Navbar

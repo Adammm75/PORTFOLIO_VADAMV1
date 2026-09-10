@@ -3,7 +3,6 @@ name: 'Projet Golem.ai - IXI Groupe'
 description: "Déploiement et gestion de projet pour l'intégration de Golem.ai InboxCare - IA neuro-symbolique pour automatiser le traitement des emails clients."
 tags: ['Gestions de Projets']
 image: '../../../public/static/Gestion_Projet_Automatisation/image_representative_projet_golem.png'
-link: 'https://github.com/example/projet-golem-ai'
 startDate: '2024-01-15'
 endDate: '2024-08-30'
 ---

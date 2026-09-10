@@ -1,184 +1,123 @@
 ---
-import { Separator } from '@/components/ui/separator'
-import { SOCIAL_LINKS } from '@/consts'
-import Link from './Link.astro'
-import SocialIcons from './SocialIcons.astro'
-import FooterLikes from './react/footer-likes'
+import Logo from '@/components/ui/logo'
+import { NAV_LINKS, SITE, SOCIAL_LINKS } from '@/consts'
+
+const year = new Date().getFullYear()
+
+const capabilities = [
+  { label: 'Technologies', value: 'Python, OpenAI SDK, Java' },
+  { label: 'Expertise', value: 'LLMs, RAG, Agents IA' },
+  { label: 'Outils', value: 'Docker, Git, n8n' },
+]
 ---
 
-<footer class="bg-[#1a1a1a] border-t border-[#2a2a2a] py-16" aria-label="Footer" role="contentinfo" id="footer">
-  <div class="mx-auto max-w-7xl px-6">
-    <!-- Upper Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-      
-      <!-- Left Column - Social Media & Engagement -->
-      <div class="space-y-8">
-        <!-- Social Media Links -->
-        <div>
-          <h3 class="text-white font-bold text-2xl mb-6 font-custom tracking-wide">Suivez-moi</h3>
-          <div class="flex space-x-5">
-            <!-- LinkedIn -->
-            <a href="https://linkedin.com/in/adam-mekkiou" 
-               class="w-14 h-14 bg-[#2a2a2a] rounded-full flex items-center justify-center hover:bg-yellow-500/20 hover:border-yellow-400/50 border border-transparent transition-all duration-300 group shadow-lg hover:shadow-xl"
-               aria-label="LinkedIn">
-              <svg class="w-7 h-7 text-white group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-              </svg>
-            </a>
-            
-            <!-- GitHub -->
-            <a href="https://github.com/cojocaru-david" 
-               class="w-14 h-14 bg-[#2a2a2a] rounded-full flex items-center justify-center hover:bg-yellow-500/20 hover:border-yellow-400/50 border border-transparent transition-all duration-300 group shadow-lg hover:shadow-xl"
-               aria-label="GitHub">
-              <svg class="w-7 h-7 text-white group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-              </svg>
-            </a>
-            
-            <!-- Portfolio/Website -->
-            <a href="https://cojocarudavid.me" 
-               class="w-14 h-14 bg-[#2a2a2a] rounded-full flex items-center justify-center hover:bg-yellow-500/20 hover:border-yellow-400/50 border border-transparent transition-all duration-300 group shadow-lg hover:shadow-xl"
-               aria-label="Portfolio">
-              <svg class="w-7 h-7 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0-9c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
-              </svg>
-            </a>
-            
-            <!-- Email -->
-            <a href="mailto:adam.mekkiou@outlook.fr" 
-               class="w-14 h-14 bg-[#2a2a2a] rounded-full flex items-center justify-center hover:bg-yellow-500/20 hover:border-yellow-400/50 border border-transparent transition-all duration-300 group shadow-lg hover:shadow-xl"
-               aria-label="Email">
-              <svg class="w-7 h-7 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-        
-        <!-- Engagement Button -->
-        <div>
-          <FooterLikes client:load />
-        </div>
+<footer class="relative z-10 mt-24" aria-label="Pied de page">
+  <div class="hairline" aria-hidden="true"></div>
+
+  <div class="shell py-16">
+    <div class="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr] lg:gap-16">
+      <!-- Identity -->
+      <div>
+        <a href="/" class="group inline-flex items-center gap-3">
+          <Logo />
+          <span class="font-display text-lg">{SITE.title}</span>
+        </a>
+
+        <p class="text-muted-foreground mt-6 max-w-sm text-sm leading-relaxed">
+          Développeur en Intelligence Artificielle spécialisé dans le
+          développement de solutions IA innovantes et l'ingénierie logicielle.
+          À la pointe de l'IA générative, j'explore les possibilités infinies
+          des LLM pour créer des solutions d'entreprise qui façonnent l'avenir.
+        </p>
+
+        <dl class="mt-8 space-y-3">
+          {
+            capabilities.map((item) => (
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <dt class="text-muted-foreground w-24 shrink-0 font-mono text-[0.62rem] tracking-[0.16em] uppercase">
+                  {item.label}
+                </dt>
+                <dd class="text-foreground/90 text-sm">{item.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
       </div>
-      
-      <!-- Middle Column - Technical Information -->
-      <div class="space-y-8">
-        <!-- Technologies -->
-        <div>
-          <h3 class="text-white font-bold text-2xl mb-4 font-custom tracking-wide flex items-center gap-2">
-            <span class="w-1 h-6 bg-yellow-500 rounded-full"></span>
-            Technologies
-          </h3>
-          <div class="space-y-3">
-            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-yellow-500/10 transition-all duration-300">
-              <svg class="w-6 h-6 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-              <span class="text-gray-300 text-lg font-medium">Python, OpenAI SDK, Java</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Expertise -->
-        <div>
-          <h3 class="text-white font-bold text-2xl mb-4 font-custom tracking-wide flex items-center gap-2">
-            <span class="w-1 h-6 bg-yellow-500 rounded-full"></span>
-            Expertise
-          </h3>
-          <div class="space-y-3">
-            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-yellow-500/10 transition-all duration-300">
-              <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-              <span class="text-gray-300 text-lg font-medium">LLMs, RAG, Agents IA</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Tools -->
-        <div>
-          <h3 class="text-white font-bold text-2xl mb-4 font-custom tracking-wide flex items-center gap-2">
-            <span class="w-1 h-6 bg-yellow-500 rounded-full"></span>
-            Outils
-          </h3>
-          <div class="space-y-3">
-            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-yellow-500/10 transition-all duration-300">
-              <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-              <span class="text-gray-300 text-lg font-medium">Docker, Git, n8n</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Right Column - Description -->
-      <div class="space-y-6">
-        <h3 class="text-white font-bold text-2xl font-custom tracking-wide flex items-center gap-2">
-          <span class="w-1 h-6 bg-yellow-500 rounded-full"></span>
-          À propos
-        </h3>
-        <div class="space-y-4 text-gray-300 leading-relaxed">
-          <p class="text-lg font-medium border-l-4 border-yellow-500 pl-4">
-            Développeur en Intelligence Artificielle spécialisé dans le développement de solutions IA innovantes et l'ingénierie logicielle.
+
+      <!-- Navigation -->
+      <nav aria-label="Navigation du pied de page">
+        <h2 class="kicker">Navigation</h2>
+        <ul class="mt-5 space-y-3">
+          {
+            NAV_LINKS.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="text-muted-foreground hover:text-primary link-underline text-sm capitalize transition-colors"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <!-- Contact -->
+      <div>
+        <h2 class="kicker">Contact</h2>
+        <ul class="mt-5 space-y-3">
+          {
+            SOCIAL_LINKS.map((social) => (
+              <li>
+                <a
+                  href={social.href}
+                  target={social.href.startsWith('http') ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  class="group flex items-baseline justify-between gap-3 text-sm"
+                >
+                  <span class="text-muted-foreground group-hover:text-primary link-underline transition-colors">
+                    {social.label}
+                  </span>
+                  <span class="text-muted-foreground/60 truncate font-mono text-[0.65rem]">
+                    {social.handle}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="panel mt-8 p-4">
+          <p class="text-muted-foreground flex items-center gap-2 text-xs">
+            <span class="bg-primary size-1.5 shrink-0 rounded-full"></span>
+            {SITE.location}
           </p>
-          <p class="text-lg font-medium">
-            À la pointe de l'IA générative, j'explore les possibilités infinies des LLM pour créer des solutions d'entreprise qui façonnent l'avenir.
+          <p class="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+            <span class="bg-primary size-1.5 shrink-0 rounded-full"></span>
+            Réponse sous 24h
           </p>
-        </div>
-        
-        <!-- Quick Contact -->
-        <div class="pt-6">
-          <h4 class="text-white font-bold text-xl mb-3 font-custom flex items-center gap-2">
-            <span class="w-1 h-5 bg-yellow-500 rounded-full"></span>
-            Contact Rapide
-          </h4>
-          <div class="space-y-2 text-lg font-medium text-gray-300">
-            <p class="flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
-              📍 Île-de-France, France
-            </p>
-            <p class="flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
-              📧 adam.mekkiou@outlook.fr
-            </p>
-            <p class="flex items-center gap-2">
-              <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
-              ⏰ Réponse sous 24h
-            </p>
-          </div>
         </div>
       </div>
     </div>
-    
-    <!-- Lower Section - Copyright -->
-    <div class="flex flex-col sm:flex-row items-center justify-between text-center sm:text-left pt-8">
-      <div class="flex flex-wrap items-center justify-center gap-x-4 text-center mb-6 sm:mb-0">
-        <span class="text-gray-400 text-base font-medium" aria-label="copyright">
-          2020 - {new Date().getFullYear()} &copy; <span style="color: #FCD34D; font-weight: 300;">Mekkiou Adam</span>. Tous droits réservés.
-      </span>
-        <p class="text-gray-400 text-base font-medium" aria-label="open-source description">
-        <Link
-          href="https://github.com/cojocaru-david/portfolio"
-            class="text-white hover:text-yellow-400 transition-colors font-semibold"
-          external
-          underline>Open-source</Link
-        > under MIT license
+
+    <!-- Oversized wordmark -->
+    <p
+      aria-hidden="true"
+      class="font-display text-foreground/[0.06] mt-16 overflow-hidden text-[clamp(2rem,12vw,9.5rem)] leading-none whitespace-nowrap select-none"
+    >
+      {SITE.title}
+    </p>
+
+    <div
+      class="border-border mt-8 flex flex-col items-start justify-between gap-4 border-t pt-8 sm:flex-row sm:items-center"
+    >
+      <p class="text-muted-foreground text-xs">
+        © {year} {SITE.author}. Tous droits réservés.
       </p>
-      </div>
-      
-      <!-- Additional Links -->
-      <div class="flex space-x-8 text-base">
-        <Link href="/" class="text-gray-400 hover:text-yellow-400 transition-colors font-semibold">
-          Accueil
-        </Link>
-        <Link href="/projects" class="text-gray-400 hover:text-yellow-400 transition-colors font-semibold">
-          Projets
-        </Link>
-        <Link href="/#contact" class="text-gray-400 hover:text-yellow-400 transition-colors font-semibold">
-          Contact
-        </Link>
-      </div>
+      <p class="text-muted-foreground text-xs">
+        Conçu et développé avec Astro, React &amp; Tailwind CSS.
+      </p>
     </div>
   </div>
 </footer>

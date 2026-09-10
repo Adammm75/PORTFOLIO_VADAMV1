@@ -1,124 +1,109 @@
 ---
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import type { MarkdownHeading } from 'astro'
-import { Icon } from 'astro-icon/components'
 
-type Props = {
+interface Props {
   headings: MarkdownHeading[]
 }
 
 const { headings } = Astro.props
 
-function getHeadingMargin(depth: number): string {
-  const margins: Record<number, string> = {
-    3: 'ml-4',
-    4: 'ml-8',
-    5: 'ml-12',
-    6: 'ml-16',
-  }
-  return margins[depth] || ''
+const indent: Record<number, string> = {
+  3: 'pl-4',
+  4: 'pl-8',
+  5: 'pl-12',
+  6: 'pl-16',
 }
 
-function cleanupHeading(text: string): string {
-  text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-  text = text.replace(/&amp;/g, '&').replace(/&quot;/g, '"')
-  text = text.replace(/&#39;/g, "'").replace(/&apos;/g, "'")
-  text = text.replace(/:/g, '')
-  text = text.replace(/,/g, '')
-  return text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ')
+/** Markdown headings arrive HTML-escaped and often carry emoji + punctuation. */
+function cleanHeading(text: string): string {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/<[^>]+>/g, '')
+    .trim()
 }
+
+// Skip the document H1: the page already renders the project title.
+const visible = headings.filter(
+  (heading) => heading.depth >= 2 && heading.depth <= 4,
+)
 ---
 
-<details
-  open
-  class="group col-start-2 rounded-xl border p-4 xl:sticky xl:top-26 xl:col-start-1 xl:mr-8 xl:ml-auto xl:h-[calc(100vh-5rem)] xl:max-w-fit xl:rounded-none xl:border-none xl:p-0"
->
-  <summary
-    class="flex cursor-pointer items-center justify-between text-xl font-medium group-open:pb-4"
-  >
-    <div>
-      <hr class="mb-8 hidden md:block" />
-      <h2
-        id="skills-title"
-        class="font-custom flex items-center gap-x-2 text-2xl font-bold text-neutral-900 dark:text-white"
-      >
-        Table of Contents <Icon
-          name="lucide:chevron-down"
-          class="size-5 shrink-0 transition-transform group-open:rotate-180"
-        />
-      </h2>
-      <p class="text-sm text-neutral-500 dark:text-neutral-400">
-        This is a list of all the sections in this post. Click on any of them to
-        jump to that section.
-      </p>
-    </div>
-  </summary>
-
-  <ScrollArea
-    client:load
-    className="flex max-h-64 flex-col overflow-y-auto xl:max-h-[calc(100vh-8rem)]"
-    type="always"
-  >
-    <ul
-      class="flex list-none flex-col gap-y-2 px-4 xl:mr-8"
-      id="table-of-contents"
-    >
-      {
-        headings.map((heading) => (
-          <li
-            class={cn(
-              'text-foreground/60 text-sm xl:p-0',
-              getHeadingMargin(heading.depth)
-            )}
-          >
+{
+  visible.length > 0 && (
+    <nav aria-label="Sommaire" class="toc" data-toc>
+      <p class="kicker mb-4">Sommaire</p>
+      <ul class="border-border flex list-none flex-col border-l">
+        {visible.map((heading) => (
+          <li>
             <a
               href={`#${heading.slug}`}
-              class="marker:text-foreground/30 block list-disc px-3 py-2 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit xl:list-none"
-              aria-label={`Scroll to ${heading.text}`}
-              title={`Scroll to ${heading.text}`}
+              data-toc-link={heading.slug}
+              class={cn(
+                'text-muted-foreground hover:text-foreground -ml-px block border-l border-transparent py-1.5 pl-4 text-sm transition-colors duration-200',
+                indent[heading.depth],
+              )}
             >
-              {cleanupHeading(heading.text)}
+              {cleanHeading(heading.text)}
             </a>
           </li>
-        ))
-      }
-    </ul>
-  </ScrollArea>
-</details>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .toc a[data-active='true'] {
+    color: var(--foreground);
+    border-left-color: var(--primary);
+  }
+</style>
 
 <script>
+  // Highlights the heading currently in view. Runs immediately — the previous
+  // version only listened for `astro:page-load`, an event this site never fires.
   function setupToc() {
-    const header = document.querySelector('header')
-    const headerHeight = header ? header.offsetHeight : 0
+    const nav = document.querySelector<HTMLElement>('[data-toc]')
+    if (!nav) return
+
+    const headings = Array.from(
+      document.querySelectorAll<HTMLElement>('.prose :is(h2, h3, h4)[id]'),
+    )
+    if (headings.length === 0) return
+
+    const links = new Map<string, HTMLAnchorElement>()
+    nav.querySelectorAll<HTMLAnchorElement>('[data-toc-link]').forEach((link) => {
+      links.set(link.dataset.tocLink ?? '', link)
+    })
+
+    let active: HTMLAnchorElement | null = null
+
+    const setActive = (id: string) => {
+      const link = links.get(id)
+      if (!link || link === active) return
+      active?.removeAttribute('data-active')
+      link.setAttribute('data-active', 'true')
+      active = link
+    }
 
     const observer = new IntersectionObserver(
-      (sections) => {
-        sections.forEach((section) => {
-          const heading = section.target.querySelector('h2, h3, h4, h5, h6')
-          if (!heading) return
-
-          const id = heading.getAttribute('id')
-          const link = document.querySelector(
-            `#table-of-contents li a[href="#${id}"]`
-          )
-          if (!link) return
-
-          const addRemove = section.isIntersecting ? 'add' : 'remove'
-          link.classList[addRemove]('text-foreground')
-        })
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+        if (visible?.target.id) setActive(visible.target.id)
       },
-      {
-        rootMargin: `-${headerHeight}px 0px 0px 0px`,
-      }
+      { rootMargin: '-15% 0px -70% 0px', threshold: 0 },
     )
 
-    const sections = document.querySelectorAll('.prose section')
-    sections.forEach((section) => {
-      observer.observe(section)
-    })
+    headings.forEach((heading) => observer.observe(heading))
   }
 
-  document.addEventListener('astro:page-load', setupToc)
-  document.addEventListener('astro:after-swap', setupToc)
+  setupToc()
 </script>

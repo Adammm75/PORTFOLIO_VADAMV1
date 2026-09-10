@@ -1,6 +1,9 @@
 {
-  "name": "Cojocaru David",
-  "short_name": "CD",
+  "name": "Mekkiou Adam — Développeur IA",
+  "short_name": "Mekkiou Adam",
+  "description": "Portfolio de Mekkiou Adam, développeur spécialisé en Intelligence Artificielle, Data Science et automatisation.",
+  "lang": "fr",
+  "start_url": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +18,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#141619",
+  "background_color": "#141619",
   "display": "standalone"
 }

@@ -5,31 +5,45 @@ import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
 import icon from 'astro-icon'
 
-import expressiveCode from 'astro-expressive-code'
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
+import expressiveCode from 'astro-expressive-code'
+import rehypeDocument from 'rehype-document'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeKatex from 'rehype-katex'
-import rehypePrettyCode from 'rehype-pretty-code'
 import remarkEmoji from 'remark-emoji'
 import remarkMath from 'remark-math'
 import remarkSectionize from 'remark-sectionize'
-import rehypeDocument from 'rehype-document'
 
 import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections'
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
 
 import tailwindcss from '@tailwindcss/vite'
 
-import vercel from '@astrojs/vercel';
+import { SITE_URL } from './src/site.config'
 
 export default defineConfig({
-  site: 'https://your-portfolio.vercel.app', // On changera ça après déploiement
+  // Single source of truth lives in src/site.config.ts
+  site: SITE_URL,
+
+  // Fully static output: no server runtime, deployable as-is on Netlify,
+  // Vercel, GitHub Pages or any static host.
+  output: 'static',
 
   integrations: [
     expressiveCode({
-      themes: ['catppuccin-latte', 'ayu-dark'],
+      themes: ['vitesse-light', 'vitesse-dark'],
       plugins: [pluginCollapsibleSections(), pluginLineNumbers()],
-      useDarkModeMediaQuery: true,
+      // The site toggles `.dark` on <html>, so code blocks must follow the
+      // class rather than the OS-level media query.
+      useDarkModeMediaQuery: false,
+      themeCssSelector: (theme) =>
+        theme.type === 'dark' ? '.dark' : ':root:not(.dark)',
+      styleOverrides: {
+        borderRadius: '0.75rem',
+        borderColor: 'var(--border)',
+        codeFontFamily: 'var(--font-mono)',
+        uiFontFamily: 'var(--font-sans)',
+      },
       defaultProps: {
         wrap: true,
         collapseStyle: 'collapsible-auto',
@@ -50,22 +64,16 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      exclude: ["satori", "satori-html"],
+      exclude: ['satori', 'satori-html'],
       include: [
-        "react",
-        "react-dom",
-        "clsx",
-        "framer-motion",
-        "lucide-react",
-        "lodash.debounce",
-        "@radix-ui/react-icons",
-        "@radix-ui/react-avatar",
-        "@radix-ui/react-dropdown-menu",
-        "@radix-ui/react-scroll-area",
-        "@radix-ui/react-separator",
-        "@radix-ui/react-slot"
-      ]
-    },    
+        'react',
+        'react-dom',
+        'clsx',
+        'framer-motion',
+        'lucide-react',
+        'react-icons/si',
+      ],
+    },
   },
 
   server: {
@@ -95,20 +103,7 @@ export default defineConfig({
       ],
       rehypeHeadingIds,
       rehypeKatex,
-      [
-        rehypePrettyCode,
-        {
-          theme: {
-            light: 'catppuccin-latte',
-            dark: 'ayu-dark',
-          },
-        },
-      ],
     ],
     remarkPlugins: [remarkMath, remarkEmoji, remarkSectionize],
   },
-
-  adapter: vercel({
-    webAnalytics: { enabled: true }
-  })
 })
