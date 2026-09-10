@@ -32,6 +32,11 @@ const period = [startDate && formatMonth(startDate), endDate && formatMonth(endD
 
 const ogImage = new URL(`/image/${project.id}.png`, Astro.site ?? SITE.href).toString()
 
+// KaTeX ships a stylesheet of its own. Load it from <head>, and only when the
+// article really contains math — otherwise every project page paid for a
+// render-blocking third-party request it never used.
+const usesMath = /\$\$[\s\S]+\$\$|\$[^$\n]+\$/.test(project.body ?? '')
+
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'CreativeWork',
@@ -48,12 +53,22 @@ const structuredData = {
 ---
 
 <Layout title={name} description={description} image={ogImage} type="article" isWide>
-  <script
-    type="application/ld+json"
-    is:inline
-    slot="head"
-    set:html={JSON.stringify(structuredData)}
-  />
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(structuredData)}
+    />
+    {
+      usesMath && (
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
+          crossorigin="anonymous"
+        />
+      )
+    }
+  </Fragment>
 
   <div class="shell py-10 sm:py-14">
     <Breadcrumbs

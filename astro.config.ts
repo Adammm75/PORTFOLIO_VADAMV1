@@ -7,7 +7,6 @@ import icon from 'astro-icon'
 
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import expressiveCode from 'astro-expressive-code'
-import rehypeDocument from 'rehype-document'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeKatex from 'rehype-katex'
 import remarkEmoji from 'remark-emoji'
@@ -88,12 +87,6 @@ export default defineConfig({
   markdown: {
     syntaxHighlight: false,
     rehypePlugins: [
-      [
-        rehypeDocument,
-        {
-          css: 'https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css',
-        },
-      ],
       [
         rehypeExternalLinks,
         {
