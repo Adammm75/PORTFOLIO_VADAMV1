@@ -2,7 +2,7 @@
 name: 'Logbook'
 description: "L'application Logbook est une solution éducative innovante conçue pour les enseignants du collège, du lycée, de l'enseignement supérieur et les formateurs. Elle vise à faciliter la correction des copies en permettant l'enregistrement de commentaires oraux personnalisés pour chaque élève."
 tags: ['Développement Full Stack', 'Intelligence Artificielle']
-image: '../../../public/static/logbook.png'
+image: '../../assets/projects/logbook.png'
 link: 'https://github.com/Adammm75/SYMPHONY_HACKATHON_PROJET_FINAL_LOGBOOK_L3_INFO'
 startDate: '2025-03-30'
 endDate: '2025-12-15'

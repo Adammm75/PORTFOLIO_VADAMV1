@@ -1,4 +1,8 @@
 import { DOCUMENTS, NAV_LINKS, SITE, SOCIAL_LINKS } from '@/consts'
+import {
+  useFocusTrap,
+  useScrollLock,
+} from '@/components/react/modal-behaviour'
 import { applyTheme } from '@/components/react/theme-switch'
 import { cn } from '@/lib/utils'
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
@@ -54,6 +58,9 @@ function CommandPaletteContent({ projects = [] }: CommandPaletteProps) {
   const [copied, setCopied] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const dialogRef = useFocusTrap<HTMLDivElement>(open)
+
+  useScrollLock(open)
 
   const close = useCallback(() => {
     setOpen(false)
@@ -217,11 +224,7 @@ function CommandPaletteContent({ projects = [] }: CommandPaletteProps) {
   useEffect(() => {
     if (!open) return
     const timer = window.setTimeout(() => inputRef.current?.focus(), 40)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      window.clearTimeout(timer)
-      document.body.style.overflow = ''
-    }
+    return () => window.clearTimeout(timer)
   }, [open])
 
   useEffect(() => setCursor(0), [query])
@@ -268,6 +271,7 @@ function CommandPaletteContent({ projects = [] }: CommandPaletteProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
+          ref={dialogRef}
           className="fixed inset-0 z-[130] flex items-start justify-center px-4 pt-[12vh]"
           role="dialog"
           aria-modal="true"

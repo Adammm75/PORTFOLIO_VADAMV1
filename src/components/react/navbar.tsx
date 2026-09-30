@@ -2,6 +2,10 @@ import { NAV_LINKS, SITE, SOCIAL_LINKS } from '@/consts'
 import { cn } from '@/lib/utils'
 import Logo from '@/components/ui/logo'
 import ThemeSwitch from '@/components/react/theme-switch'
+import {
+  useFocusTrap,
+  useScrollLock,
+} from '@/components/react/modal-behaviour'
 import { EASE } from '@/components/react/motion-primitives'
 import { AnimatePresence, motion, useScroll, useSpring, MotionConfig } from 'framer-motion'
 import { ArrowUpRight, Command, Menu, X } from 'lucide-react'
@@ -17,6 +21,9 @@ function NavbarContent() {
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [pathname, setPathname] = useState('/')
   const [isMac, setIsMac] = useState(false)
+
+  const menuRef = useFocusTrap<HTMLDivElement>(menuOpen)
+  useScrollLock(menuOpen)
 
   const { scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, {
@@ -55,13 +62,6 @@ function NavbarContent() {
     sections.forEach((section) => observer.observe(section))
     return () => observer.disconnect()
   }, [])
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [menuOpen])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -214,8 +214,12 @@ function NavbarContent() {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
+            ref={menuRef}
             id="mobile-menu"
             key="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

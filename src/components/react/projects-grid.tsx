@@ -120,11 +120,14 @@ function ProjectsGridContent({
     [projects],
   )
 
-  // Deep-linkable filter: /projects?tag=Data%20Science
+  // Deep-linkable filter: /projects?tag=Data%20Science — only where the
+  // filter bar is actually rendered, otherwise the homepage teaser would be
+  // silently filtered with no visible way to clear it.
   useEffect(() => {
+    if (!showFilters) return
     const initial = new URLSearchParams(window.location.search).get('tag')
     if (initial && tags.includes(initial)) setFilter(initial)
-  }, [tags])
+  }, [showFilters, tags])
 
   const apply = (tag: string) => {
     setFilter(tag)

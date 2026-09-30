@@ -2,7 +2,7 @@
 name: 'TP Data Science - Analyse Statistique'
 description: "Travaux pratiques avancés en Data Science avec analyses statistiques, visualisations et modélisation prédictive sur datasets réels."
 tags: ['Data Science']
-image: '../../../public/static/TP_Data_science.png'
+image: '../../assets/projects/tp-data-science.png'
 link: 'https://github.com/Adammm75/TP_1_DATA_SCIENCE_PYTHON_L3_INFO'
 startDate: '2024-03-15'
 endDate: '2024-06-20'

@@ -2,7 +2,7 @@
 name: 'Automatisation Rapport Commercial IXI GROUPE L3 STS Info'
 description: "Automatisation complète du processus de génération des rapports commerciaux pour IXI Groupe - Optimisation des workflows et génération automatique de tableaux de bord."
 tags: ['Automatisation RPA & API']
-image: '../../../public/static/Automatisation_Rapport_Commercial_L3/image_representative_auto_rapport_commercial.png'
+image: '../../assets/projects/image-representative-auto-rapport-commercial.png'
 link: 'https://github.com/Adammm75/Rapport_Commercial_Automatisation_RPA_L3_INFO'
 startDate: '2024-03-01'
 endDate: '2024-06-30'
