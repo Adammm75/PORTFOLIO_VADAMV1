@@ -4,9 +4,17 @@
     "strictNullChecks": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react"
-  }
+  },
+  "exclude": [
+    "dist",
+    ".astro",
+    "node_modules",
+    "PORTFOLIO_VERSION_ADAM"
+  ]
 }

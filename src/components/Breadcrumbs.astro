@@ -1,58 +1,49 @@
 ---
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
 import { Icon } from 'astro-icon/components'
 
-export interface BreadcrumbItem {
+export interface Crumb {
   href?: string
   label: string
   icon?: string
 }
 
 interface Props {
-  items: BreadcrumbItem[]
+  items: Crumb[]
 }
 
 const { items } = Astro.props
 ---
 
-<Breadcrumb>
-  <BreadcrumbList>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/" aria-label="Home" title="Home">
-        <span class="sr-only">Home</span>
-        <Icon name="lucide:home" class="size-4" />
-      </BreadcrumbLink>
-    </BreadcrumbItem>
+<nav aria-label="Fil d'Ariane" class="mb-10">
+  <ol class="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.68rem] tracking-[0.12em] uppercase">
+    <li>
+      <a href="/" class="hover:text-primary link-underline transition-colors">
+        Accueil
+      </a>
+    </li>
     {
       items.map((item, index) => (
         <>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            {index === items.length - 1 ? (
-              <BreadcrumbPage>
-                <span class="flex items-center gap-x-2">
-                  {item.icon && <Icon name={item.icon} class="size-4" />}
-                  {item.label}
-                </span>
-              </BreadcrumbPage>
+          <li aria-hidden="true" class="opacity-50">
+            /
+          </li>
+          <li class="flex items-center gap-1.5">
+            {item.icon && <Icon name={item.icon} class="size-3.5" />}
+            {index === items.length - 1 || !item.href ? (
+              <span aria-current="page" class="text-foreground max-w-[16rem] truncate">
+                {item.label}
+              </span>
             ) : (
-              <BreadcrumbLink href={item.href}>
-                <span class="flex items-center gap-x-2">
-                  {item.icon && <Icon name={item.icon} class="size-4" />}
-                  {item.label}
-                </span>
-              </BreadcrumbLink>
+              <a
+                href={item.href}
+                class="hover:text-primary link-underline transition-colors"
+              >
+                {item.label}
+              </a>
             )}
-          </BreadcrumbItem>
+          </li>
         </>
       ))
     }
-  </BreadcrumbList>
-</Breadcrumb>
+  </ol>
+</nav>

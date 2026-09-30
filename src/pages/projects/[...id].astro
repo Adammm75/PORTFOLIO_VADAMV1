@@ -1,129 +1,203 @@
 ---
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import TableOfContents from '@/components/TableOfContents.astro'
-import { badgeVariants } from '@/components/ui/badge'
+import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
 import { getAllProjects } from '@/lib/data-utils'
-import { Icon } from 'astro-icon/components'
+import { formatMonth, readingTime } from '@/lib/utils'
 import { Image } from 'astro:assets'
 import { render } from 'astro:content'
-import PageHead from '@/components/PageHead.astro'
+import { ArrowLeft, ArrowRight, ArrowUpRight, Clock, Tag } from 'lucide-react'
 
 export async function getStaticPaths() {
   const projects = await getAllProjects()
-  return projects.map((project) => ({
+  return projects.map((project, index) => ({
     params: { id: project.id },
-    props: project,
+    props: {
+      project,
+      previous: projects[index - 1] ?? null,
+      next: projects[index + 1] ?? null,
+    },
   }))
 }
 
-const project = Astro.props
+const { project, previous, next } = Astro.props
 const { Content, headings } = await render(project)
+
+const { name, description, tags, image, link, startDate, endDate } = project.data
+
+const period = [startDate && formatMonth(startDate), endDate && formatMonth(endDate)]
+  .filter(Boolean)
+  .join(' — ')
+
+const ogImage = new URL(`/image/${project.id}.png`, Astro.site ?? SITE.href).toString()
+
+// KaTeX ships a stylesheet of its own. Load it from <head>, and only when the
+// article really contains math — otherwise every project page paid for a
+// render-blocking third-party request it never used.
+const usesMath = /\$\$[\s\S]+\$\$|\$[^$\n]+\$/.test(project.body ?? '')
 
 const structuredData = {
   '@context': 'https://schema.org',
-  '@type': 'Projects',
-  headline: project.data.name,
-  datePublished: project.data.startDate || '',
-  dateModified: project.data.endDate || project.data.startDate || '',
-  author: {
-    '@type': 'Person',
-    name: 'Author',
-  },
-  image: new URL(`/image/${project.id}.png`, Astro.site).toString(),
-  keywords: project.data.tags ? project.data.tags.join(', ') : '',
-  description: project.data.description || '',
+  '@type': 'CreativeWork',
+  name,
+  headline: name,
+  description,
+  keywords: tags?.join(', ') ?? '',
+  datePublished: startDate?.toISOString(),
+  dateModified: (endDate ?? startDate)?.toISOString(),
+  image: ogImage,
+  url: new URL(`/projects/${project.id}/`, Astro.site ?? SITE.href).toString(),
+  author: { '@type': 'Person', name: SITE.author, url: SITE.href },
 }
-const currentUrl = Astro.url;
 ---
 
-<Layout canonicalUrl={currentUrl} isWide={true}> 
-  <PageHead slot="head" title={project.data.name} />
-  <script
-    type="application/ld+json"
-    is:inline
-    set:html={JSON.stringify(structuredData)}
-  />
-  <section
-    class="grid grid-cols-[minmax(0px,1fr)_min(calc(var(--breakpoint-lg)-2rem),100%)_minmax(0px,1fr)] gap-y-6 max-w-[calc(100vw-2rem)] "
-  >
-    <div class="col-start-2">
-      <Breadcrumbs
-        items={[
-          { href: '/projects', label: 'Projects', icon: 'lucide:folder' },
-          { label: project.data.name, icon: 'lucide:folder-open' },
-        ]}
-      />
-    </div>
-    <section class="col-start-2 flex flex-col gap-y-6 text-start">
-      <div class="flex flex-col">
-        <h1
-          class="mb-2 text-3xl leading-tight font-medium text-pretty sm:text-5xl text-white"
-        >
-          {project.data.name}
-        </h1>
+<Layout title={name} description={description} image={ogImage} type="article" isWide>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(structuredData)}
+    />
+    {
+      usesMath && (
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
+          crossorigin="anonymous"
+        />
+      )
+    }
+  </Fragment>
 
-        <div class="flex flex-wrap justify-start gap-2">
-          {
-            project.data.tags && project.data.tags.length > 0 ? (
-              project.data.tags.map((tag) => (
-                <a
-                  href={`/tags/${tag}`}
-                  class={badgeVariants({ variant: 'secondary' })}
-                >
-                  <Icon name="lucide:hash" class="size-3" />
-                  {tag}
-                </a>
-              ))
-            ) : (
-              <span class="text-white/60 text-sm">
-                No tags available
-              </span>
-            )
-          }
-        </div>
-      </div>
-    </section>
-
-    <Image
-      src={project.data.image}
-      alt={project.data.name}
-      class="col-start-2 mb-8 h-auto w-full rounded-3xl object-cover"
-      loading="lazy"
-      fetchpriority="low"      
-      width={800}
-      height={600}
+  <div class="shell py-10 sm:py-14">
+    <Breadcrumbs
+      items={[
+        { href: '/projects', label: 'Projets', icon: 'lucide:folder' },
+        { label: name, icon: 'lucide:folder-open' },
+      ]}
     />
 
-    {headings.length > 0 && <TableOfContents headings={headings} />}
+    <header class="mx-auto max-w-3xl" data-reveal>
+      {period && <p class="kicker">{period}</p>}
 
-    <article class="prose col-start-2 max-w-none prose-invert">
-      <Content />
-    </article>
+      <h1 class="font-display mt-4 text-[clamp(2rem,5vw,3.5rem)] leading-[1.05]">
+        {name}
+      </h1>
 
-    <aside
-    class="group col-start-2 rounded-xl border p-4 xl:sticky xl:top-26 xl:col-start-3 xl:mr-auto xl:ml-8 xl:h-[calc(100vh-5rem)] xl:max-w-fit xl:rounded-none xl:border-none xl:p-0"
-  >
-    <div class="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-md transition-all duration-300 group-hover:shadow-lg xl:group-hover:shadow-none xl:group-hover:shadow-none">
-      <h2 class="text-lg font-semibold text-white">Project Details</h2>
-      <div class="flex flex-col gap-2 text-sm text-white/80">
-        <p>{project.data.description}</p>
-      </div>
+      <p class="text-muted-foreground mt-5 text-lg leading-relaxed text-pretty">
+        {description}
+      </p>
 
-      <hr class="my-4 border-t" />
-
-      <div class="flex flex-col gap-2 text-sm text-white/80">
-        <h3 class="text-base font-semibold text-white">Project Links</h3>
-        <ul class="list-disc pl-4">
-          <li>
-            <a href={project.data.link} target="_blank" rel="noopener noreferrer">
-              {project.data.link}
+      <div class="mt-7 flex flex-wrap items-center gap-2">
+        {
+          tags?.map((tag) => (
+            <a
+              href={`/projects?tag=${encodeURIComponent(tag)}`}
+              class="border-border text-muted-foreground hover:border-accent-line hover:text-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-[0.68rem] transition-colors"
+            >
+              <Tag className="size-3" />
+              {tag}
             </a>
-          </li>
-        </ul>
+          ))
+        }
       </div>
-    </div>
-  </aside>
 
-  </section>
+      <div class="border-border text-muted-foreground mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 border-t pt-6 text-sm">
+        <span class="inline-flex items-center gap-1.5">
+          <Clock className="size-4" />
+          {readingTime(project.body ?? '')}
+        </span>
+        {
+          link && (
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-cursor-label="code"
+              class="text-primary hover:text-foreground link-underline inline-flex items-center gap-1.5 font-medium transition-colors"
+            >
+              <ArrowUpRight className="size-4" />
+              Voir le dépôt du projet
+            </a>
+          )
+        }
+      </div>
+    </header>
+
+    <figure class="mt-12" data-reveal>
+      <Image
+        src={image}
+        alt={`Aperçu du projet ${name}`}
+        widths={[640, 960, 1440]}
+        sizes="(min-width: 1280px) 1200px, 100vw"
+        format="webp"
+        quality={80}
+        loading="eager"
+        class="border-border max-h-[70vh] w-full rounded-2xl border object-cover"
+      />
+    </figure>
+
+    <div class="mt-16 grid gap-12 xl:grid-cols-[16rem_minmax(0,1fr)] xl:gap-16">
+      <aside
+        class="xl:sticky xl:top-28 xl:max-h-[calc(100vh-9rem)] xl:self-start xl:overflow-y-auto xl:pr-2"
+      >
+        <TableOfContents headings={headings} pageTitle={name} />
+      </aside>
+
+      <article class="prose min-w-0 max-w-3xl">
+        <Content />
+      </article>
+    </div>
+
+    <nav
+      aria-label="Projets adjacents"
+      class="border-border mt-20 grid gap-4 border-t pt-10 sm:grid-cols-2"
+    >
+      {
+        previous ? (
+          <a
+            href={`/projects/${previous.id}`}
+            class="panel panel-hover group flex flex-col gap-2 p-5"
+          >
+            <span class="kicker flex items-center gap-2">
+              <ArrowLeft className="size-3.5" />
+              Projet précédent
+            </span>
+            <span class="font-display group-hover:text-primary text-lg transition-colors">
+              {previous.data.name}
+            </span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next && (
+          <a
+            href={`/projects/${next.id}`}
+            class="panel panel-hover group flex flex-col items-end gap-2 p-5 text-right sm:col-start-2"
+          >
+            <span class="kicker flex items-center gap-2">
+              Projet suivant
+              <ArrowRight className="size-3.5" />
+            </span>
+            <span class="font-display group-hover:text-primary text-lg transition-colors">
+              {next.data.name}
+            </span>
+          </a>
+        )
+      }
+    </nav>
+
+    <div class="mt-10 flex justify-center">
+      <a
+        href="/projects"
+        class="border-border hover:border-accent-line hover:bg-card/60 inline-flex items-center gap-2 rounded-full border px-6 py-3.5 text-sm font-semibold transition-colors"
+      >
+        <ArrowLeft className="size-4" />
+        Retour à tous les projets
+      </a>
+    </div>
+  </div>
 </Layout>

@@ -1,0 +1,70 @@
+---
+import { cn } from '@/lib/utils'
+
+interface Props {
+  id?: string
+  /** Two-digit marker shown before the kicker, e.g. "02". */
+  index?: string
+  kicker?: string
+  title: string
+  lead?: string
+  class?: string
+  /** Renders the heading block centred instead of left-aligned. */
+  centered?: boolean
+}
+
+const {
+  id,
+  index,
+  kicker,
+  title,
+  lead,
+  class: className,
+  centered = false,
+} = Astro.props
+---
+
+<section
+  id={id}
+  class={cn('relative scroll-mt-28 py-20 sm:py-28', className)}
+  aria-labelledby={id ? `${id}-title` : undefined}
+>
+  <header
+    class={cn('mb-12 flex flex-col sm:mb-16', centered && 'items-center text-center')}
+    data-reveal
+  >
+    {
+      (index || kicker) && (
+        <p class="kicker flex items-center gap-3">
+          {index && <span class="text-primary">{index}</span>}
+          {index && kicker && (
+            <span aria-hidden="true" class="bg-border h-px w-8" />
+          )}
+          {kicker}
+        </p>
+      )
+    }
+
+    <h2
+      id={id ? `${id}-title` : undefined}
+      class="font-display mt-4 text-[length:var(--text-section)] leading-[1.02]"
+    >
+      {title}
+    </h2>
+
+    {
+      lead && (
+        <p
+          class={cn(
+            'text-muted-foreground mt-5 max-w-2xl text-base leading-relaxed text-pretty',
+            centered && 'mx-auto',
+          )}
+        >
+          {lead}
+        </p>
+      )
+    }
+  </header>
+
+  <slot />
+</section>

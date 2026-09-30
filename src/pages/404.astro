@@ -1,29 +1,68 @@
 ---
-import Link from '@/components/Link.astro'
-import PageHead from '@/components/PageHead.astro'
-import { buttonVariants } from '@/components/ui/button'
 import Layout from '@/layouts/Layout.astro'
-import { cn } from '@/lib/utils'
-
-const currentUrl = Astro.url;
+import { ArrowLeft, FolderOpen } from 'lucide-react'
 ---
 
-<Layout canonicalUrl={currentUrl}>
-  <PageHead slot="head" title="404" />
-
+<Layout
+  title="Page introuvable"
+  description="Cette page n'existe pas ou a été déplacée."
+>
   <section
-    class="flex w-full flex-col items-center justify-center gap-y-4 text-center"
+    class="flex min-h-[70vh] flex-col items-center justify-center py-20 text-center"
   >
-    <div class="max-w-md">
-      <h1 class="mb-4 text-3xl font-medium">404: Page not found</h1>
-      <p class="prose">Oops! The page you're looking for doesn't exist.</p>
-    </div>
-    <Link
-      href="/"
-      class={cn(buttonVariants({ variant: 'outline' }), 'flex gap-x-1.5 group')}
+    <p class="kicker" data-reveal>Erreur 404</p>
+
+    <p
+      class="font-display text-gradient mt-6 text-[clamp(5rem,22vw,14rem)] leading-none"
+      data-reveal
+      style="--reveal-delay:80ms"
+      aria-hidden="true"
     >
-      <span class="transition-transform group-hover:-translate-x-1">&larr;</span
-      > Go to home page
-    </Link>
+      404
+    </p>
+
+    <h1 class="font-display mt-2 text-3xl sm:text-4xl" data-reveal style="--reveal-delay:160ms">
+      Cette page a disparu du dépôt.
+    </h1>
+
+    <p
+      class="text-muted-foreground mt-4 max-w-md text-balance"
+      data-reveal
+      style="--reveal-delay:220ms"
+    >
+      Le lien est peut-être obsolète, ou la page a été renommée. Reprenons depuis
+      un endroit connu.
+    </p>
+
+    <div
+      class="mt-10 flex flex-wrap items-center justify-center gap-3"
+      data-reveal
+      style="--reveal-delay:300ms"
+    >
+      <a
+        href="/"
+        class="bg-primary text-primary-foreground sheen relative inline-flex items-center gap-2 overflow-hidden rounded-full px-6 py-3.5 text-sm font-semibold"
+      >
+        <ArrowLeft className="size-4" />
+        Retour à l'accueil
+      </a>
+      <a
+        href="/projects"
+        class="border-border hover:border-accent-line hover:bg-card/60 inline-flex items-center gap-2 rounded-full border px-6 py-3.5 text-sm font-semibold transition-colors"
+      >
+        <FolderOpen className="size-4" />
+        Voir les projets
+      </a>
+    </div>
+
+    <p
+      class="text-muted-foreground mt-8 font-mono text-xs"
+      data-reveal
+      style="--reveal-delay:360ms"
+    >
+      Astuce : appuyez sur <kbd class="bg-muted rounded px-1.5 py-0.5">Ctrl</kbd>
+      +
+      <kbd class="bg-muted rounded px-1.5 py-0.5">K</kbd> pour rechercher.
+    </p>
   </section>
 </Layout>

@@ -2,7 +2,7 @@
 name: 'Projet Tutoré - HelpLeRebours (JavaFX)'
 description: "Application Windows JavaFX pour service d'entraide pédagogique - Gestion des demandes de soutien, matching étudiant-tuteur et administration des séances."
 tags: ['Développement Full Stack']
-image: '../../../public/static/Dev_Full_Stack_Tutorat/image_representative_tutorat.png'
+image: '../../assets/projects/image-representative-tutorat.png'
 link: 'https://github.com/Adammm75/EPREUVE-E5-PROJET-TUTORAT-LEREBOURS-JAVAFX'
 startDate: '2024-02-01'
 endDate: '2024-06-15'

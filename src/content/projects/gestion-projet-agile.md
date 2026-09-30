@@ -2,8 +2,7 @@
 name: 'Projet EcoVision Strasbourg'
 description: "Gestion complète du projet EcoVision pour la Ville de Strasbourg - Streaming en direct de la biodiversité urbaine avec coordination multi-équipes et budget 32K€."
 tags: ['Gestions de Projets']
-image: '../../../public/static/gestion_projet.png'
-link: 'https://github.com/example/projet-agile'
+image: '../../assets/projects/gestion-projet.png'
 startDate: '2024-01-15'
 endDate: '2024-06-30'
 ---

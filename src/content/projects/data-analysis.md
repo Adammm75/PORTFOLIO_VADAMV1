@@ -2,7 +2,7 @@
 name: 'Prédiction de Churn Client'
 description: 'Analyse prédictive de la résiliation client avec machine learning - Random Forest pour identifier les facteurs de départ et optimiser la rétention.'
 tags: ['Data Science', 'Intelligence Artificielle']
-image: '../../../public/static/data_science.png'
+image: '../../assets/projects/data-science.png'
 link: 'https://github.com/Adammm75/PROJET_IA_MACHINE_LEARNING_PYTHON_L3_INFO'
 startDate: '2024-06-01'
 ---

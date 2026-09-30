@@ -1,50 +1,79 @@
 ---
 import { SITE } from '@/consts'
 import Favicons from './Favicons.astro'
+
+interface Props {
+  title: string
+  description?: string
+  /** Absolute URL of the social card. */
+  image?: string
+  canonical?: string | URL
+  type?: 'website' | 'article'
+}
+
+const {
+  title,
+  description = SITE.descriptionPlain,
+  image = new URL('/ogImage.png', Astro.site ?? SITE.href).toString(),
+  canonical = Astro.url,
+  type = 'website',
+} = Astro.props
+
+const canonicalUrl = canonical.toString()
+
+/** Search results cut descriptions around 160 characters. */
+const metaDescription =
+  description.length > 160
+    ? `${description.slice(0, 157).trimEnd()}…`
+    : description
+const fullTitle = title === SITE.title ? `${SITE.title} — ${SITE.role}` : `${title} · ${SITE.title}`
 ---
 
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, user-scalable=yes"
-  />
-  <meta name="generator" content={Astro.generator} />
-  <meta name="robots" content="index, follow" />
-  <meta name="googlebot" content="index, follow" />
-  <meta name="google" content="notranslate" />
-  <meta name="revisit-after" content="1 days" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
 
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta
-    name="format-detection"
-    content="telephone=no,date=no,address=no,email=no,url=no"
-  />
+<title>{fullTitle}</title>
+<meta name="description" content={metaDescription} />
+<meta name="author" content={SITE.author} />
+<link rel="canonical" href={canonicalUrl} />
 
-  <meta
-    name="theme-color"
-    content="#121212"
-    media="(prefers-color-scheme: dark)"
-  />
-  <meta
-    name="theme-color"
-    content="#121212"
-    media="(prefers-color-scheme: light)"
-  />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#141619" media="(prefers-color-scheme: dark)" />
+<meta name="color-scheme" content="light dark" />
 
-  <link rel="sitemap" href="/sitemap-index.xml" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <link
-    rel="alternate"
-    type="application/rss+xml"
-    title={SITE.title}
-    href={new URL('rss.xml', Astro.site)}
-  />
+<meta property="og:type" content={type} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={metaDescription} />
+<meta property="og:image" content={image} />
+<meta property="og:image:alt" content={title} />
+<meta property="og:locale" content={SITE.locale} />
+<meta property="og:site_name" content={SITE.title} />
+<meta property="og:url" content={canonicalUrl} />
 
-  <Favicons />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={metaDescription} />
+<meta name="twitter:image" content={image} />
+<meta name="twitter:image:alt" content={title} />
 
-  <slot />
-</head>
+<link rel="manifest" href="/site.webmanifest" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={`${SITE.title} — Projets`}
+  href={new URL('rss.xml', Astro.site ?? SITE.href).toString()}
+/>
+
+<link rel="preload" href="/fonts/GeistVF.woff2" as="font" type="font/woff2" crossorigin />
+<link
+  rel="preload"
+  href="/fonts/ClashDisplay-Semibold.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<Favicons />

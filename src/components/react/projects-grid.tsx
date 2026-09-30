@@ -1,302 +1,227 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { EASE, useSpotlight } from '@/components/react/motion-primitives'
+import { cn } from '@/lib/utils'
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
+import { ArrowUpRight, SearchX } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 
-interface Project {
-  id: string;
-  data: {
-    name: string;
-    description: string;
-    image: {
-      src: string;
-      width: number;
-      height: number;
-      format: string;
-    };
-    tags: string[];
-    endDate?: Date;
-  };
+type ProjectsGridProps = {
+  projects: ProjectCard[]
+  showFilters?: boolean
+  /**
+   * Heading level for the card titles: 2 on the projects index (directly
+   * under the page <h1>), 3 on the homepage (under a section <h2>).
+   */
+  headingLevel?: 2 | 3
 }
 
-interface ProjectsGridProps {
-  projects: Project[];
+export type ProjectCard = {
+  id: string
+  name: string
+  description: string
+  tags: string[]
+  image: { src: string; width: number; height: number }
+  year: string
 }
 
-export default function ProjectsGrid({ projects }: ProjectsGridProps) {
-  const [hoveredProject, setHoveredProject] = useState<string | null>(null);
-  const [filter, setFilter] = useState('all');
-  const [filteredProjects, setFilteredProjects] = useState(projects);
-
-  // Obtenir tous les tags uniques
-  const allTags = Array.from(new Set(projects.flatMap(project => project.data.tags || [])));
-
-  useEffect(() => {
-    if (filter === 'all') {
-      setFilteredProjects(projects);
-    } else {
-      setFilteredProjects(projects.filter(project => 
-        project.data.tags?.includes(filter)
-      ));
-    }
-  }, [filter, projects]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const projectVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20,
-      scale: 0.95
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    },
-    hover: {
-      y: -8,
-      scale: 1.02,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  const imageVariants = {
-    hover: {
-      scale: 1.1,
-      transition: {
-        duration: 0.4,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  const tagVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: {
-        duration: 0.3
-      }
-    }
-  };
+function Card({
+  project,
+  index,
+  headingLevel,
+}: {
+  project: ProjectCard
+  index: number
+  headingLevel: 2 | 3
+}) {
+  const Heading = `h${headingLevel}` as 'h2' | 'h3'
+  const { ref, onMouseMove } = useSpotlight<HTMLAnchorElement>()
 
   return (
-    <div className="w-full">
-      {/* Filtres */}
-      <motion.div 
-        className="flex flex-wrap gap-3 mb-8 justify-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 24, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -12, scale: 0.98 }}
+      transition={{ duration: 0.45, ease: EASE, delay: Math.min(index * 0.05, 0.3) }}
+      className="h-full"
+    >
+      <a
+        ref={ref}
+        onMouseMove={onMouseMove}
+        href={`/projects/${project.id}`}
+        data-cursor-label="ouvrir"
+        className="panel panel-hover spotlight group flex h-full flex-col overflow-hidden"
       >
-        <motion.button
-          onClick={() => setFilter('all')}
-          className={`px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${
-            filter === 'all' 
-              ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-black shadow-lg' 
-              : 'bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] hover:border-yellow-400/30 border border-transparent'
-          }`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Tous
-        </motion.button>
-        {allTags.map((tag) => (
-          <motion.button
-            key={tag}
-            onClick={() => setFilter(tag)}
-            className={`px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${
-              filter === tag 
-                ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-black shadow-lg' 
-                : 'bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] hover:border-yellow-400/30 border border-transparent'
-            }`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {tag}
-          </motion.button>
-        ))}
-      </motion.div>
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <img
+            src={project.image.src}
+            width={project.image.width}
+            height={project.image.height}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.06]"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 transition-opacity duration-500 group-hover:opacity-70"
+            style={{
+              background:
+                'linear-gradient(180deg, transparent 35%, color-mix(in oklab, var(--card) 92%, transparent) 100%)',
+            }}
+          />
+          <span className="border-border bg-background/70 text-muted-foreground absolute top-4 left-4 rounded-full border px-2.5 py-1 font-mono text-[0.62rem] tracking-widest backdrop-blur-md">
+            {project.year}
+          </span>
+        </div>
 
-      {/* Grille de projets */}
-      <motion.div 
-        className="grid grid-cols-1 md:grid-cols-2 gap-8"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <AnimatePresence>
-          {filteredProjects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              variants={projectVariants}
-              whileHover="hover"
-              onHoverStart={() => setHoveredProject(project.id)}
-              onHoverEnd={() => setHoveredProject(null)}
-              className="group relative"
-            >
-              <motion.a 
-                href={`/projects/${project.id}`}
-                className="block h-full rounded-2xl overflow-hidden bg-[#1a1a1a] border border-[#2a2a2a] hover:border-yellow-400/30 transition-all duration-300 shadow-lg hover:shadow-2xl"
+        <div className="relative z-10 flex flex-1 flex-col p-6">
+          <Heading className="font-display group-hover:text-primary text-xl leading-snug transition-colors duration-300">
+            {project.name}
+          </Heading>
+          <p className="text-muted-foreground mt-3 line-clamp-3 text-sm leading-relaxed">
+            {project.description}
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-2 pt-1">
+            {project.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="border-border text-muted-foreground rounded-full border px-2.5 py-1 font-mono text-[0.65rem]"
               >
-                {/* Image du projet */}
-                <div className="relative aspect-[16/10] overflow-hidden">
-                                     <motion.img
-                     src={project.data.image.src}
-                     alt={project.data.name}
-                     className="w-full h-full object-cover"
-                     variants={imageVariants}
-                     loading="lazy"
-                   />
-                  
-                  {/* Overlay au survol */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: hoveredProject === project.id ? 1 : 0 }}
+                {tag}
+              </span>
+            ))}
+            {project.tags.length > 3 && (
+              <span className="text-muted-foreground px-1 py-1 font-mono text-[0.65rem]">
+                +{project.tags.length - 3}
+              </span>
+            )}
+          </div>
+
+          <span className="border-border text-primary mt-6 flex items-center justify-between border-t pt-4 text-sm font-medium">
+            Voir le projet
+            <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+          </span>
+        </div>
+      </a>
+    </motion.article>
+  )
+}
+
+function ProjectsGridContent({
+  projects,
+  showFilters = true,
+  headingLevel = 3,
+}: ProjectsGridProps) {
+  const [filter, setFilter] = useState('all')
+
+  const tags = useMemo(
+    () => [...new Set(projects.flatMap((project) => project.tags))],
+    [projects],
+  )
+
+  // Deep-linkable filter: /projects?tag=Data%20Science — only where the
+  // filter bar is actually rendered, otherwise the homepage teaser would be
+  // silently filtered with no visible way to clear it.
+  useEffect(() => {
+    if (!showFilters) return
+    const initial = new URLSearchParams(window.location.search).get('tag')
+    if (initial && tags.includes(initial)) setFilter(initial)
+  }, [showFilters, tags])
+
+  const apply = (tag: string) => {
+    setFilter(tag)
+    const url = new URL(window.location.href)
+    if (tag === 'all') url.searchParams.delete('tag')
+    else url.searchParams.set('tag', tag)
+    history.replaceState(null, '', url)
+  }
+
+  const visible = useMemo(
+    () =>
+      filter === 'all'
+        ? projects
+        : projects.filter((project) => project.tags.includes(filter)),
+    [filter, projects],
+  )
+
+  return (
+    <div>
+      {showFilters && (
+        <div className="mb-10 flex flex-wrap gap-2">
+          {['all', ...tags].map((tag) => {
+            const active = filter === tag
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => apply(tag)}
+                aria-pressed={active}
+                className={cn(
+                  'relative rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300',
+                  'border',
+                  active
+                    ? 'text-primary-foreground border-transparent'
+                    : 'border-border text-muted-foreground hover:text-foreground hover:border-accent-line',
+                )}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="project-filter"
+                    className="bg-primary absolute inset-0 rounded-full"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   />
-                  
-                  {/* Icône de lecture */}
-                  <motion.div
-                    className="absolute top-4 right-4 w-10 h-10 bg-yellow-400/30 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 border border-yellow-400/50"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: hoveredProject === project.id ? 1 : 0 }}
-                    whileHover={{ scale: 1.1, backgroundColor: "rgba(251, 191, 36, 0.5)" }}
-                  >
-                    <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                    </svg>
-                  </motion.div>
-                </div>
+                )}
+                <span className="relative z-10">
+                  {tag === 'all' ? 'Tous les projets' : tag}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
 
-                {/* Contenu du projet */}
-                <div className="p-6">
-                  <motion.h3 
-                    className="text-xl font-bold text-white mb-3 group-hover:text-yellow-400 transition-colors duration-300"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    {project.data.name}
-                  </motion.h3>
-                  
-                  <motion.p 
-                    className="text-sm text-white/80 line-clamp-2 mb-4 leading-relaxed"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    {project.data.description || "Un projet innovant démontrant créativité et compétences techniques"}
-                  </motion.p>
-
-                  {/* Tags */}
-                  <motion.div 
-                    className="flex flex-wrap gap-2 mb-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    {project.data.tags?.slice(0, 3).map((tag, tagIndex) => (
-                      <motion.span
-                        key={tag}
-                        variants={tagVariants}
-                        className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400/20 to-amber-500/20 text-yellow-400 font-medium border border-yellow-400/30"
-                        initial="hidden"
-                        animate="visible"
-                        transition={{ delay: 0.3 + tagIndex * 0.1 }}
-                      >
-                        {tag}
-                      </motion.span>
-                    ))}
-                    {project.data.tags?.length > 3 && (
-                      <motion.span
-                        className="text-xs px-3 py-1 rounded-full bg-[#2a2a2a] text-muted-foreground font-medium"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.6 }}
-                      >
-                        +{project.data.tags.length - 3}
-                      </motion.span>
-                    )}
-                  </motion.div>
-
-                  {/* Date et indicateur */}
-                  <motion.div 
-                    className="flex justify-between items-center pt-4 border-t border-[#2a2a2a]"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <div className="flex items-center text-xs text-white/80">
-                      <svg className="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                      </svg>
-                      {project.data.endDate ? new Date(project.data.endDate).getFullYear() : 'En cours'}
-                    </div>
-                    
-                    <motion.div
-                      className="w-2 h-2 bg-yellow-400 rounded-full"
-                      animate={{ 
-                        scale: [1, 1.2, 1],
-                        opacity: [0.7, 1, 0.7]
-                      }}
-                      transition={{ 
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    />
-                  </motion.div>
-                </div>
-              </motion.a>
-            </motion.div>
+      <motion.div
+        layout
+        className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+      >
+        <AnimatePresence mode="popLayout">
+          {visible.map((project, index) => (
+            <Card
+              key={project.id}
+              project={project}
+              index={index}
+              headingLevel={headingLevel}
+            />
           ))}
         </AnimatePresence>
       </motion.div>
 
-      {/* Message si aucun projet trouvé */}
-      {filteredProjects.length === 0 && (
-        <motion.div 
-          className="text-center py-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div 
-            className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-yellow-400/20 to-amber-500/20 rounded-full flex items-center justify-center border border-yellow-400/30"
-            animate={{ 
-              scale: [1, 1.05, 1],
-              rotate: [0, 5, -5, 0]
-            }}
-            transition={{ 
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+      {visible.length === 0 && (
+        <div className="panel flex flex-col items-center gap-3 px-6 py-16 text-center">
+          <SearchX className="text-muted-foreground size-8" />
+          <p className="font-display text-lg">Aucun projet dans cette catégorie</p>
+          <button
+            type="button"
+            onClick={() => apply('all')}
+            className="text-primary link-underline text-sm font-medium"
           >
-            <svg className="w-8 h-8 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </motion.div>
-          <h3 className="text-lg font-medium text-white mb-2">Aucun projet trouvé</h3>
-          <p className="text-white/80">Aucun projet ne correspond au filtre sélectionné.</p>
-        </motion.div>
+            Réinitialiser le filtre
+          </button>
+        </div>
       )}
     </div>
-  );
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion` for every animation in this island:
+ * framer skips transform and layout animations, opacity fades stay.
+ */
+export default function ProjectsGrid(props: ProjectsGridProps) {
+  return (
+    <MotionConfig reducedMotion="user">
+      <ProjectsGridContent {...props} />
+    </MotionConfig>
+  )
 }

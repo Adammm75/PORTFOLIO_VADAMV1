@@ -2,7 +2,7 @@
 name: 'Projet de Gestion Boursière - Application Web (JavaFX)'
 description: "Application JavaFX de gestion de portefeuille d'actions pour traders - Interface complète avec achat/vente d'actions et gestion de base de données MySQL."
 tags: ['Développement Full Stack']
-image: '../../../public/static/Dev_Full_Stack_Bourse/image_representative_bourse.png'
+image: '../../assets/projects/image-representative-bourse.png'
 link: 'https://github.com/Adammm75/GESTION_BOURSE_SPRING_BOOT_L3_INFO/tree/main/GESTION_BOURSE_SPRING_BOOT_L3_INFO'
 startDate: '2024-01-15'
 endDate: '2024-05-30'

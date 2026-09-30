@@ -1,0 +1,53 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import ProjectsGrid from '@/components/react/projects-grid'
+import Layout from '@/layouts/Layout.astro'
+import { getAllProjects, getProjectCards, getProjectTags } from '@/lib/data-utils'
+
+const projects = await getAllProjects()
+const cards = await getProjectCards(projects)
+const tags = await getProjectTags()
+---
+
+<Layout
+  title="Projets"
+  description="Sélection de projets en Intelligence Artificielle, Data Science, automatisation et développement full stack."
+>
+  <div class="py-10 sm:py-14">
+    <Breadcrumbs items={[{ label: 'Projets', icon: 'lucide:folder' }]} />
+
+    <header class="mb-14 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between" data-reveal>
+      <div class="max-w-3xl">
+        <p class="kicker flex items-center gap-3">
+          <span class="text-primary">Mon travail</span>
+          <span aria-hidden="true" class="bg-border h-px w-8"></span>
+          {projects.length} projets
+        </p>
+        <h1 class="font-display mt-4 text-[length:var(--text-section)] leading-[1.02]">
+          Projets
+        </h1>
+        <p class="text-muted-foreground mt-5 leading-relaxed text-pretty">
+          Vous trouverez ici une sélection de mes projets réalisés autour du
+          développement, de l'Intelligence Artificielle, de la Data Science,
+          l'automatisation et la gestion de projets. Chaque projet illustre ma
+          capacité à transformer une idée en solution concrète, avec un souci de
+          performance, de clarté et d'efficacité. J'aime expérimenter, apprendre
+          et partager mes réalisations.
+        </p>
+      </div>
+
+      <dl class="border-border grid shrink-0 grid-cols-2 gap-px overflow-hidden rounded-2xl border" style="background-color: var(--border)">
+        <div class="bg-background/60 px-6 py-5">
+          <dt class="kicker">Projets</dt>
+          <dd class="font-display mt-1 text-3xl">{projects.length}</dd>
+        </div>
+        <div class="bg-background/60 px-6 py-5">
+          <dt class="kicker">Domaines</dt>
+          <dd class="font-display mt-1 text-3xl">{tags.length}</dd>
+        </div>
+      </dl>
+    </header>
+
+    <ProjectsGrid projects={cards} headingLevel={2} client:load />
+  </div>
+</Layout>

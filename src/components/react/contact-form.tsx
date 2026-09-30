@@ -1,175 +1,261 @@
-import { useState } from 'react';
+import { EASE } from '@/components/react/motion-primitives'
+import { SITE } from '@/consts'
+import { cn } from '@/lib/utils'
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
+import { AlertCircle, CheckCircle2, Loader2, Send } from 'lucide-react'
+import { useState } from 'react'
 
-export default function ContactForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [notification, setNotification] = useState<{
-    show: boolean;
-    type: 'success' | 'error';
-    title: string;
-    message: string;
-  }>({
-    show: false,
-    type: 'success',
-    title: '',
-    message: ''
-  });
+/** Getform.io endpoint backing the form. */
+const FORM_ENDPOINT = 'https://getform.io/f/bqoopvvb'
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+type Status = 'idle' | 'sending' | 'success' | 'error'
+type Errors = Partial<Record<'name' | 'email' | 'message', string>>
 
-    const formData = new FormData(e.currentTarget);
-    
-    // Validation côté client
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const message = formData.get('message') as string;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    if (!name || !email || !message) {
-      showNotification('Erreur !', 'Veuillez remplir tous les champs.', 'error');
-      setIsSubmitting(false);
-      return;
+function validate(values: {
+  name: string
+  email: string
+  message: string
+}): Errors {
+  const errors: Errors = {}
+  if (!values.name.trim()) errors.name = 'Merci d’indiquer votre nom.'
+  if (!values.email.trim()) errors.email = 'Merci d’indiquer votre e-mail.'
+  else if (!EMAIL_PATTERN.test(values.email))
+    errors.email = 'Cette adresse e-mail semble invalide.'
+  if (values.message.trim().length < 10)
+    errors.message = 'Votre message doit faire au moins 10 caractères.'
+  return errors
+}
+
+function Field({
+  id,
+  label,
+  error,
+  children,
+}: {
+  id: string
+  label: string
+  error?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="text-muted-foreground mb-2 block font-mono text-[0.68rem] tracking-[0.16em] uppercase"
+      >
+        {label}
+      </label>
+      {children}
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            id={`${id}-error`}
+            role="alert"
+            className="text-destructive mt-2 flex items-center gap-1.5 text-xs"
+          >
+            <AlertCircle className="size-3.5 shrink-0" />
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+const inputClass = cn(
+  'border-border bg-background/60 text-foreground placeholder:text-muted-foreground/70 w-full rounded-xl border px-4 py-3.5 text-sm',
+  'transition-colors duration-300 outline-none focus:border-[var(--ring)]',
+  'aria-[invalid=true]:border-destructive',
+)
+
+function ContactFormContent() {
+  const [status, setStatus] = useState<Status>('idle')
+  const [errors, setErrors] = useState<Errors>({})
+  const [feedback, setFeedback] = useState('')
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    // Keep a reference: `currentTarget` is nulled once we await.
+    const form = event.currentTarget
+    const data = new FormData(form)
+    const values = {
+      name: String(data.get('name') ?? ''),
+      email: String(data.get('email') ?? ''),
+      message: String(data.get('message') ?? ''),
     }
 
-    if (!isValidEmail(email)) {
-      showNotification('Erreur !', 'Veuillez entrer une adresse email valide.', 'error');
-      setIsSubmitting(false);
-      return;
+    const nextErrors = validate(values)
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) {
+      setStatus('error')
+      setFeedback('Quelques champs demandent votre attention.')
+      return
     }
+
+    setStatus('sending')
+    setFeedback('')
 
     try {
-      // Utiliser Getform.io - Service gratuit et simple (jusqu'à 50 submissions/mois)
-      const response = await fetch('https://getform.io/f/bqoopvvb', {
+      const response = await fetch(FORM_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
-          name: name,
-          email: email,
-          message: message,
-          subject: 'Nouveau message depuis votre portfolio',
-          portfolio: 'Mekkiou Adam - Portfolio Contact'
-        })
-      });
-      
-      if (response.ok) {
-        showNotification('Message envoyé !', 'Votre message a été envoyé avec succès. Je vous répondrai dans les plus brefs délais.', 'success');
-        e.currentTarget.reset();
-      } else {
-        throw new Error('Erreur lors de l\'envoi');
-      }
-    } catch (error) {
-      console.error('Erreur d\'envoi:', error);
-      // Fallback: mailto comme dernière option
-      const mailtoLink = `mailto:adam.mekkiou@outlook.fr?subject=Contact depuis votre portfolio&body=Nom: ${name}%0D%0AEmail: ${email}%0D%0A%0D%0AMessage:%0D%0A${message}`;
-      window.location.href = mailtoLink;
-      showNotification('Redirection...', 'Ouverture de votre client email pour envoyer le message.', 'success');
-    } finally {
-      setIsSubmitting(false);
+          ...values,
+          subject: 'Nouveau message depuis le portfolio',
+          portfolio: `${SITE.title} — Portfolio Contact`,
+        }),
+      })
+
+      if (!response.ok) throw new Error(`Réponse ${response.status}`)
+
+      form.reset()
+      setStatus('success')
+      setFeedback(
+        'Message envoyé. Je vous réponds dans les plus brefs délais — merci !',
+      )
+    } catch {
+      // Last resort: hand the message to the visitor's mail client.
+      const subject = encodeURIComponent('Contact depuis votre portfolio')
+      const body = encodeURIComponent(
+        `Nom : ${values.name}\nEmail : ${values.email}\n\nMessage :\n${values.message}`,
+      )
+      window.location.href = `mailto:${SITE.email}?subject=${subject}&body=${body}`
+      setStatus('error')
+      setFeedback(
+        "L'envoi automatique a échoué : votre logiciel de messagerie vient de s'ouvrir avec le message pré-rempli.",
+      )
     }
-  };
+  }
 
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const showNotification = (title: string, message: string, type: 'success' | 'error') => {
-    setNotification({
-      show: true,
-      type,
-      title,
-      message
-    });
-
-    // Masquer la notification après 5 secondes
-    setTimeout(() => {
-      setNotification(prev => ({ ...prev, show: false }));
-    }, 5000);
-  };
+  const clearError = (field: keyof Errors) =>
+    setErrors((current) => ({ ...current, [field]: undefined }))
 
   return (
-    <>
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input type="hidden" name="to_email" value="adam.mekkiou@outlook.fr" />
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
-              Nom
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              placeholder="Votre nom"
-              className="w-full px-4 py-3 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-              required
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="votre.email@exemple.com"
-              className="w-full px-4 py-3 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-              required
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="message" className="block text-sm font-medium text-white mb-2">
-              Message
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              rows={6}
-              placeholder="Décrivez votre projet ou votre demande..."
-              className="w-full px-4 py-3 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300 resize-none"
-              required
-            />
-          </div>
-          
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-yellow-500 text-black py-3 px-6 rounded-lg font-medium hover:bg-yellow-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Envoi en cours...' : 'Envoyer'}
-          </button>
-        </form>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.6, ease: EASE }}
+      className="panel p-6 sm:p-8"
+    >
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <Field id="name" label="Nom" error={errors.name}>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            autoComplete="name"
+            placeholder="Votre nom"
+            aria-invalid={Boolean(errors.name)}
+            aria-describedby={errors.name ? 'name-error' : undefined}
+            onChange={() => clearError('name')}
+            className={inputClass}
+          />
+        </Field>
 
-      {/* Notification Popup */}
-      {notification.show && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 shadow-2xl max-w-sm">
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center">
-                {notification.type === 'success' ? (
-                  <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
-                  </svg>
-                )}
-              </div>
-              <div>
-                <h3 className="text-foreground font-semibold">{notification.title}</h3>
-                <p className="text-muted-foreground text-sm">{notification.message}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+        <Field id="email" label="E-mail" error={errors.email}>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="vous@exemple.com"
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? 'email-error' : undefined}
+            onChange={() => clearError('email')}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field id="message" label="Message" error={errors.message}>
+          <textarea
+            id="message"
+            name="message"
+            rows={6}
+            placeholder="Décrivez votre projet ou votre demande…"
+            aria-invalid={Boolean(errors.message)}
+            aria-describedby={errors.message ? 'message-error' : undefined}
+            onChange={() => clearError('message')}
+            className={cn(inputClass, 'resize-none')}
+          />
+        </Field>
+
+        <button
+          type="submit"
+          disabled={status === 'sending'}
+          data-cursor-label="envoyer"
+          className={cn(
+            'bg-primary text-primary-foreground sheen relative flex w-full items-center justify-center gap-2 overflow-hidden',
+            'rounded-full px-6 py-3.5 text-sm font-semibold transition-opacity duration-300',
+            'disabled:cursor-not-allowed disabled:opacity-60',
+          )}
+        >
+          {status === 'sending' ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Envoi en cours…
+            </>
+          ) : (
+            <>
+              <Send className="size-4" />
+              Envoyer le message
+            </>
+          )}
+        </button>
+
+        <AnimatePresence>
+          {feedback && (
+            <motion.p
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              role="status"
+              aria-live="polite"
+              className={cn(
+                'flex items-start gap-2 rounded-xl border px-4 py-3 text-sm',
+                status === 'success'
+                  ? 'border-[color-mix(in_oklab,var(--success)_45%,transparent)] text-[var(--success)]'
+                  : 'border-[color-mix(in_oklab,var(--destructive)_45%,transparent)] text-[var(--destructive)]',
+              )}
+            >
+              {status === 'success' ? (
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+              ) : (
+                <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              )}
+              {feedback}
+            </motion.p>
+          )}
+        </AnimatePresence>
+
+        <p className="text-muted-foreground text-center text-xs">
+          Ou écrivez-moi directement à{' '}
+          <a
+            href={`mailto:${SITE.email}`}
+            className="text-foreground link-underline"
+          >
+            {SITE.email}
+          </a>
+        </p>
+      </form>
+    </motion.div>
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion` for every animation in this island:
+ * framer skips transform and layout animations, opacity fades stay.
+ */
+export default function ContactForm() {
+  return (
+    <MotionConfig reducedMotion="user">
+      <ContactFormContent />
+    </MotionConfig>
+  )
 }

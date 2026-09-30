@@ -2,8 +2,7 @@
 name: 'Mémoire M1 2024/2025'
 description: "Automatisation des processus métier chez IXI Groupe - Intégration d'outils IA/LLM et optimisation des workflows opérationnels."
 tags: ['Mémoire 2024/2025', 'Gestions de Projets', 'Data Science', 'Automatisation RPA & API', 'Développement Full Stack', 'Intelligence Artificielle']
-image: '../../../public/static/mémoire.png'
-link: 'https://github.com/example/memoire-2025'
+image: '../../assets/projects/memoire.png'
 startDate: '2024-09-01'
 endDate: '2025-06-30'
 ---

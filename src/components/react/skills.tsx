@@ -1,140 +1,210 @@
-import { useEffect } from 'react'
-import { technologies, type Technologies, type Category } from '../../consts'
-import { InfiniteScroll } from '../ui/infinite-scroll'
-import { type IconType } from 'react-icons'
-import { FaQuestionCircle } from 'react-icons/fa'
+import { technologies } from '@/consts'
+import type { Technology } from '@/types'
+import { cn } from '@/lib/utils'
+import { AppWindow, BarChart3, Database, Workflow, Webhook } from 'lucide-react'
+import type { IconType } from 'react-icons'
+import { FiCode } from 'react-icons/fi'
 import {
+  SiAstro,
+  SiCss3,
+  SiDocker,
+  SiGit,
+  SiGithub,
   SiHtml5,
   SiJavascript,
-  SiCss3,
-  SiPhp,
-  SiAstro,
-  SiTailwindcss,
-  SiGit,
-  SiDigitalocean,
-  SiCloudflare,
-  SiNetlify,
-  SiUbuntu,
-  SiLua,
-  SiGo,
-  SiNodedotjs,
-  SiApache,
-  SiNginx,
-  SiMysql,
+  SiJira,
+  SiJupyter,
+  SiLangchain,
+  SiLinux,
+  SiMake,
   SiMongodb,
-  SiDiscord,
-  SiSpotify,
-  SiBrave,
+  SiMysql,
+  SiN8N,
+  SiNodedotjs,
+  SiNumpy,
+  SiOpenai,
+  SiOpenjdk,
+  SiPandas,
+  SiPhp,
+  SiPostgresql,
+  SiPostman,
+  SiPython,
+  SiPytorch,
+  SiReact,
+  SiScikitlearn,
+  SiSelenium,
+  SiSpringboot,
+  SiTailwindcss,
+  SiTensorflow,
+  SiTypescript,
+  SiWordpress,
 } from 'react-icons/si'
-import { FileCode, LucideAppWindow, Code } from 'lucide-react'
 
-const iconMap: { [key: string]: IconType } = {
-  'mdi:language-html5': SiHtml5,
-  'mdi:language-javascript': SiJavascript,
-  'mdi:language-css3': SiCss3,
-  'mdi:language-php': SiPhp,
-  'simple-icons:astro': SiAstro,
-  'mdi:tailwind': SiTailwindcss,
-  'mdi:git': SiGit,
-  'mdi:digital-ocean': SiDigitalocean,
-  'cib:cloudflare': SiCloudflare,
-  'cib:netlify': SiNetlify,
-  'mdi:ubuntu': SiUbuntu,
-  'mdi:language-lua': SiLua,
-  'mdi:language-go': SiGo,
-  'mdi:nodejs': SiNodedotjs,
-  'cib:apache': SiApache,
-  'cib:nginx': SiNginx,
-  'cib:mysql': SiMysql,
-  'cib:mongodb': SiMongodb,
-  'mdi:discord': SiDiscord,
-  'mdi:spotify': SiSpotify,
-  'cib:brave': SiBrave,
-  'mdi:visual-studio-code': FileCode,
-  'mdi:windows': LucideAppWindow,
-  'mdi:visual-studio': Code,
+type IconComponent = IconType | React.ComponentType<{ className?: string }>
+
+/** logo key → icon component. Keys live in `consts.ts`. */
+const ICONS: Record<string, IconComponent> = {
+  'si:python': SiPython,
+  'si:javascript': SiJavascript,
+  'si:typescript': SiTypescript,
+  'si:openjdk': SiOpenjdk,
+  'si:php': SiPhp,
+  'si:html5': SiHtml5,
+  'si:css3': SiCss3,
+  'si:tensorflow': SiTensorflow,
+  'si:pytorch': SiPytorch,
+  'si:scikitlearn': SiScikitlearn,
+  'si:pandas': SiPandas,
+  'si:numpy': SiNumpy,
+  'si:openai': SiOpenai,
+  'si:langchain': SiLangchain,
+  'si:jupyter': SiJupyter,
+  'si:react': SiReact,
+  'si:astro': SiAstro,
+  'si:tailwindcss': SiTailwindcss,
+  'si:nodejs': SiNodedotjs,
+  'si:springboot': SiSpringboot,
+  'si:wordpress': SiWordpress,
+  'si:n8n': SiN8N,
+  'si:make': SiMake,
+  'si:selenium': SiSelenium,
+  'si:mysql': SiMysql,
+  'si:postgresql': SiPostgresql,
+  'si:mongodb': SiMongodb,
+  'si:git': SiGit,
+  'si:github': SiGithub,
+  'si:docker': SiDocker,
+  'si:postman': SiPostman,
+  'si:jira': SiJira,
+  'si:linux': SiLinux,
+  'lucide:database': Database,
+  'lucide:app-window': AppWindow,
+  'lucide:workflow': Workflow,
+  'lucide:bar-chart-3': BarChart3,
+  'lucide:webhook': Webhook,
 }
 
-const iconColors: { [key: string]: string } = {
-  'mdi:language-html5': 'text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.4)]',
-  'mdi:language-javascript': 'text-yellow-300 drop-shadow-[0_0_8px_rgba(253,224,71,0.4)]',
-  'mdi:language-css3': 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)]',
-  'mdi:language-php': 'text-purple-400 drop-shadow-[0_0_8px_rgba(196,181,253,0.4)]',
-  'simple-icons:astro': 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]',
-  'mdi:tailwind': 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]',
-  'mdi:git': 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.4)]',
-  'mdi:digital-ocean': 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]',
-  'cib:cloudflare': 'text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.4)]',
-  'cib:netlify': 'text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.4)]',
-  'mdi:ubuntu': 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]',
-  'mdi:language-lua': 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)]',
-  'mdi:language-go': 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]',
-  'mdi:nodejs': 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]',
-  'cib:apache': 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]',
-  'cib:nginx': 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]',
-  'cib:mysql': 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)]',
-  'cib:mongodb': 'text-green-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.4)]',
-  'mdi:discord': 'text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.4)]',
-  'mdi:spotify': 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]',
-  'cib:brave': 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]',
-  'mdi:visual-studio-code': 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)]',
-  'mdi:windows': 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]',
-  'mdi:visual-studio': 'text-purple-400 drop-shadow-[0_0_8px_rgba(196,181,253,0.4)]',
+/** Brand tint revealed on hover — the badges are monochrome at rest. */
+const TINTS: Record<string, string> = {
+  Python: '#3776AB',
+  JavaScript: '#F7DF1E',
+  TypeScript: '#3178C6',
+  Java: '#EA2D2E',
+  SQL: '#00758F',
+  PHP: '#777BB4',
+  HTML: '#E34F26',
+  CSS: '#1572B6',
+  TensorFlow: '#FF6F00',
+  PyTorch: '#EE4C2C',
+  'Scikit-learn': '#F7931E',
+  Pandas: '#907FBF',
+  NumPy: '#4DABCF',
+  'OpenAI API': '#10A37F',
+  LangChain: '#1C3C3C',
+  Jupyter: '#F37626',
+  React: '#61DAFB',
+  Astro: '#FF5D01',
+  'Tailwind CSS': '#38BDF8',
+  'Node.js': '#5FA04E',
+  'Spring Boot': '#6DB33F',
+  JavaFX: '#E76F00',
+  WordPress: '#21759B',
+  n8n: '#EA4B71',
+  Make: '#6D00CC',
+  'Power Automate': '#0066FF',
+  'Power BI': '#F2C811',
+  Selenium: '#43B02A',
+  'REST APIs': '#8A63D2',
+  MySQL: '#4479A1',
+  PostgreSQL: '#4169E1',
+  MongoDB: '#47A248',
+  Git: '#F05032',
+  GitHub: '#8B949E',
+  Docker: '#2496ED',
+  Postman: '#FF6C37',
+  Jira: '#0052CC',
+  Linux: '#FCC624',
 }
 
-const categories = Object.keys(technologies)
-const groupSize = Math.ceil(categories.length / 3)
-const categoryGroups = [
-  categories.slice(0, groupSize),
-  categories.slice(groupSize, groupSize * 2),
-  categories.slice(groupSize * 2),
-]
-
-const Skills: React.FC = () => {
-  useEffect(() => {
-    document.querySelectorAll('.tech-badge').forEach((badge) => {
-      badge.classList.add('tech-badge-visible')
-    })
-  }, [])
+function Badge({ tech }: { tech: Technology }) {
+  const Icon = ICONS[tech.logo] ?? FiCode
+  const tint = TINTS[tech.text] ?? 'var(--primary)'
 
   return (
-    <div className="z-30 mt-16 flex w-full flex-col max-w-[calc(100vw-3rem)] mx-auto lg:max-w-full">
-      <div className="space-y-12">
-        {categoryGroups.map((group, groupIndex) => (
-          <InfiniteScroll
-            key={groupIndex}
-            duration={60000}
-            direction={groupIndex % 2 === 0 ? 'normal' : 'reverse'}
-            showFade={true}
-            className="flex flex-row justify-center py-4"
-          >
-            {group.flatMap((category) =>
-              technologies[category as keyof Technologies].map(
-                (tech: Category, techIndex: number) => {
-                  const IconComponent = iconMap[tech.logo] || FaQuestionCircle
-                  const iconColor = iconColors[tech.logo] || 'text-primary'
-                  return (
-                    <div
-                      key={`${category}-${techIndex}`}
-                                             className="tech-badge repo-card border-gray-700/50 bg-gradient-to-r from-black/95 to-gray-900/95 text-gray-100 mx-4 flex items-center gap-6 rounded-full border-2 p-6 shadow-[0_8px_25px_rgba(0,0,0,0.3),0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md transition-all duration-500 hover:shadow-[0_12px_35px_rgba(0,0,0,0.4),0_0_25px_rgba(255,255,255,0.1)] hover:border-yellow-400/60 hover:bg-gradient-to-r hover:from-gray-900/95 hover:to-black/95 hover:scale-110 hover:-translate-y-2"
-                      data-tech-name={`${category}-${techIndex}`}
-                    >
-                                             <span className="bg-gradient-to-br from-gray-800/90 to-black/90 flex h-20 w-20 items-center justify-center rounded-full p-4 text-3xl shadow-[inset_0_2px_8px_rgba(255,255,255,0.1),0_4px_12px_rgba(0,0,0,0.3)] border-2 border-gray-600/50 transition-all duration-500 hover:bg-gradient-to-br hover:from-gray-700/90 hover:to-gray-800/90 hover:border-yellow-400/60 hover:shadow-[inset_0_2px_12px_rgba(255,255,255,0.2),0_6px_18px_rgba(0,0,0,0.4)] hover:scale-110">
-                        <IconComponent className={`tech-icon ${iconColor}`} />
-                      </span>
-                                             <span className="text-white font-bold text-xl tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] group-hover:text-yellow-100 transition-all duration-300">
-                         {tech.text}
-                       </span>
-                    </div>
-                  )
-                },
-              ),
-            )}
-          </InfiniteScroll>
+    <li
+      style={{ '--tint': tint } as React.CSSProperties}
+      className={cn(
+        'group border-border bg-card/50 mx-2 flex shrink-0 items-center gap-3 rounded-full border px-5 py-3 backdrop-blur-sm',
+        'transition-all duration-500 hover:-translate-y-1 hover:border-[color-mix(in_oklab,var(--tint)_55%,transparent)]',
+      )}
+    >
+      <Icon className="text-muted-foreground size-5 transition-colors duration-500 group-hover:text-[var(--tint)]" />
+      <span className="text-foreground/80 group-hover:text-foreground text-sm font-medium whitespace-nowrap transition-colors duration-500">
+        {tech.text}
+      </span>
+    </li>
+  )
+}
+
+function Row({
+  items,
+  duration,
+  reverse,
+}: {
+  items: Technology[]
+  duration: number
+  reverse?: boolean
+}) {
+  // The track is two identical halves and slides by exactly -50%, so the loop
+  // is seamless. Short rows are padded first, otherwise a gap appears on wide
+  // screens before the second half arrives.
+  const half: Technology[] = []
+  while (half.length < 14 && items.length > 0) half.push(...items)
+
+  return (
+    <div className="marquee-track relative flex overflow-hidden py-2">
+      <ul
+        className="animate-marquee flex w-max"
+        style={
+          {
+            '--marquee-duration': `${duration}s`,
+            animationDirection: reverse ? 'reverse' : 'normal',
+          } as React.CSSProperties
+        }
+      >
+        {[...half, ...half].map((tech, index) => (
+          <Badge key={`${tech.text}-${index}`} tech={tech} />
         ))}
-      </div>
+      </ul>
     </div>
   )
 }
 
-export default Skills
+/**
+ * Three counter-scrolling rows of the stack. Pure CSS animation so it stays
+ * smooth, pauses on hover, and stops entirely under reduced motion.
+ */
+export default function Skills() {
+  const groups = Object.values(technologies)
+  const rows: Technology[][] = [
+    [...(groups[0] ?? []), ...(groups[3] ?? [])],
+    [...(groups[1] ?? []), ...(groups[4] ?? [])],
+    [...(groups[2] ?? [])],
+  ]
+
+  return (
+    <div
+      className="relative"
+      style={{
+        maskImage:
+          'linear-gradient(90deg, transparent, black 8%, black 92%, transparent)',
+        WebkitMaskImage:
+          'linear-gradient(90deg, transparent, black 8%, black 92%, transparent)',
+      }}
+    >
+      <Row items={rows[0]} duration={52} />
+      <Row items={rows[1]} duration={64} reverse />
+      <Row items={rows[2]} duration={58} />
+    </div>
+  )
+}
