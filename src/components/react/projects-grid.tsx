@@ -1,8 +1,18 @@
 import { EASE, useSpotlight } from '@/components/react/motion-primitives'
 import { cn } from '@/lib/utils'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { ArrowUpRight, SearchX } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+
+type ProjectsGridProps = {
+  projects: ProjectCard[]
+  showFilters?: boolean
+  /**
+   * Heading level for the card titles: 2 on the projects index (directly
+   * under the page <h1>), 3 on the homepage (under a section <h2>).
+   */
+  headingLevel?: 2 | 3
+}
 
 export type ProjectCard = {
   id: string
@@ -13,7 +23,16 @@ export type ProjectCard = {
   year: string
 }
 
-function Card({ project, index }: { project: ProjectCard; index: number }) {
+function Card({
+  project,
+  index,
+  headingLevel,
+}: {
+  project: ProjectCard
+  index: number
+  headingLevel: 2 | 3
+}) {
+  const Heading = `h${headingLevel}` as 'h2' | 'h3'
   const { ref, onMouseMove } = useSpotlight<HTMLAnchorElement>()
 
   return (
@@ -56,9 +75,9 @@ function Card({ project, index }: { project: ProjectCard; index: number }) {
         </div>
 
         <div className="relative z-10 flex flex-1 flex-col p-6">
-          <h3 className="font-display group-hover:text-primary text-xl leading-snug transition-colors duration-300">
+          <Heading className="font-display group-hover:text-primary text-xl leading-snug transition-colors duration-300">
             {project.name}
-          </h3>
+          </Heading>
           <p className="text-muted-foreground mt-3 line-clamp-3 text-sm leading-relaxed">
             {project.description}
           </p>
@@ -89,13 +108,11 @@ function Card({ project, index }: { project: ProjectCard; index: number }) {
   )
 }
 
-export default function ProjectsGrid({
+function ProjectsGridContent({
   projects,
   showFilters = true,
-}: {
-  projects: ProjectCard[]
-  showFilters?: boolean
-}) {
+  headingLevel = 3,
+}: ProjectsGridProps) {
   const [filter, setFilter] = useState('all')
 
   const tags = useMemo(
@@ -167,7 +184,12 @@ export default function ProjectsGrid({
       >
         <AnimatePresence mode="popLayout">
           {visible.map((project, index) => (
-            <Card key={project.id} project={project} index={index} />
+            <Card
+              key={project.id}
+              project={project}
+              index={index}
+              headingLevel={headingLevel}
+            />
           ))}
         </AnimatePresence>
       </motion.div>
@@ -186,5 +208,17 @@ export default function ProjectsGrid({
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion` for every animation in this island:
+ * framer skips transform and layout animations, opacity fades stay.
+ */
+export default function ProjectsGrid(props: ProjectsGridProps) {
+  return (
+    <MotionConfig reducedMotion="user">
+      <ProjectsGridContent {...props} />
+    </MotionConfig>
   )
 }

@@ -4,9 +4,11 @@ import type { MarkdownHeading } from 'astro'
 
 interface Props {
   headings: MarkdownHeading[]
+  /** Page title, used to drop an article heading that merely repeats it. */
+  pageTitle?: string
 }
 
-const { headings } = Astro.props
+const { headings, pageTitle } = Astro.props
 
 const indent: Record<number, string> = {
   3: 'pl-4',
@@ -28,10 +30,27 @@ function cleanHeading(text: string): string {
     .trim()
 }
 
-// Skip the document H1: the page already renders the project title.
-const visible = headings.filter(
-  (heading) => heading.depth >= 2 && heading.depth <= 4,
+function normalise(value: string): string {
+  return cleanHeading(value)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+}
+
+// Markdown headings are demoted one level (see rehype-shift-headings), so the
+// article's own sections sit at h2–h5 under the page's single h1.
+let visible = headings.filter(
+  (heading) => heading.depth >= 2 && heading.depth <= 5,
 )
+
+// Several articles open on a heading that restates the project name; the page
+// already shows it as the <h1>, so it would just be a duplicate first entry.
+const first = visible[0]
+if (pageTitle && first && first.depth === 2) {
+  const a = normalise(first.text)
+  const b = normalise(pageTitle)
+  if (a && b && (a.includes(b) || b.includes(a))) visible = visible.slice(1)
+}
 ---
 
 {

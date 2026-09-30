@@ -1,7 +1,7 @@
 import { DOCUMENTS, NAV_LINKS, SITE, SOCIAL_LINKS } from '@/consts'
 import { applyTheme } from '@/components/react/theme-switch'
 import { cn } from '@/lib/utils'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import {
   ArrowRight,
   Check,
@@ -15,6 +15,10 @@ import {
   Sun,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+type CommandPaletteProps = {
+  projects?: PaletteProject[]
+}
 
 export type PaletteProject = {
   id: string
@@ -43,11 +47,7 @@ function normalise(value: string) {
  * ⌘K launcher: jumps to sections and projects, and runs the handful of
  * actions a recruiter actually wants (CV, email, profiles, theme).
  */
-export default function CommandPalette({
-  projects = [],
-}: {
-  projects?: PaletteProject[]
-}) {
+function CommandPaletteContent({ projects = [] }: CommandPaletteProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
@@ -370,5 +370,17 @@ export default function CommandPalette({
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion`: framer skips the transform on open,
+ * the opacity fade stays.
+ */
+export default function CommandPalette(props: CommandPaletteProps) {
+  return (
+    <MotionConfig reducedMotion="user">
+      <CommandPaletteContent {...props} />
+    </MotionConfig>
   )
 }

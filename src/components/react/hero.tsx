@@ -9,6 +9,7 @@ import {
   useReducedMotion,
   useSpring,
   useTransform,
+  MotionConfig,
 } from 'framer-motion'
 import { ArrowDown, ArrowUpRight, Download, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -155,7 +156,7 @@ function Portrait() {
   )
 }
 
-export default function Hero() {
+function HeroContent() {
   return (
     <div className="relative">
       <Constellation className="pointer-events-none absolute inset-0 -z-10 size-full opacity-70" />
@@ -296,5 +297,17 @@ export default function Hero() {
         Faire défiler
       </motion.a>
     </div>
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion` for every animation in this island:
+ * framer skips transform and layout animations, opacity fades stay.
+ */
+export default function Hero() {
+  return (
+    <MotionConfig reducedMotion="user">
+      <HeroContent />
+    </MotionConfig>
   )
 }

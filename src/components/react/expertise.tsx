@@ -1,6 +1,6 @@
 import { EASE, useSpotlight } from '@/components/react/motion-primitives'
 import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion'
+import { motion, MotionConfig } from 'framer-motion'
 import { Bot, Brain, Code, Database, FolderOpen } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -132,12 +132,24 @@ function Card({ area, index }: { area: Area; index: number }) {
   )
 }
 
-export default function Expertise() {
+function ExpertiseContent() {
   return (
     <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-6">
       {EXPERTISE.map((area, index) => (
         <Card key={area.id} area={area} index={index} />
       ))}
     </div>
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion` for every animation in this island:
+ * framer skips transform and layout animations, opacity fades stay.
+ */
+export default function Expertise() {
+  return (
+    <MotionConfig reducedMotion="user">
+      <ExpertiseContent />
+    </MotionConfig>
   )
 }

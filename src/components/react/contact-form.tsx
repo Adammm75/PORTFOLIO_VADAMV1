@@ -1,7 +1,7 @@
 import { EASE } from '@/components/react/motion-primitives'
 import { SITE } from '@/consts'
 import { cn } from '@/lib/utils'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { AlertCircle, CheckCircle2, Loader2, Send } from 'lucide-react'
 import { useState } from 'react'
 
@@ -73,7 +73,7 @@ const inputClass = cn(
   'aria-[invalid=true]:border-destructive',
 )
 
-export default function ContactForm() {
+function ContactFormContent() {
   const [status, setStatus] = useState<Status>('idle')
   const [errors, setErrors] = useState<Errors>({})
   const [feedback, setFeedback] = useState('')
@@ -245,5 +245,17 @@ export default function ContactForm() {
         </p>
       </form>
     </motion.div>
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion` for every animation in this island:
+ * framer skips transform and layout animations, opacity fades stay.
+ */
+export default function ContactForm() {
+  return (
+    <MotionConfig reducedMotion="user">
+      <ContactFormContent />
+    </MotionConfig>
   )
 }

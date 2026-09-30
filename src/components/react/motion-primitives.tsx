@@ -88,12 +88,10 @@ export function KineticText({
   charClassName?: string
   delay?: number
 }) {
-  const reduced = useReducedMotion()
-
-  if (reduced) {
-    return <span className={className}>{text}</span>
-  }
-
+  // The markup is identical on the server and on the client — branching on
+  // `prefers-reduced-motion` here caused a hydration mismatch. The motion
+  // itself is neutralised by <MotionConfig reducedMotion="user"> upstream.
+  //
   // Characters animate individually, but words stay whole so a line can only
   // ever break between words.
   const words = text.split(' ')

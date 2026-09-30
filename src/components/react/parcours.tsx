@@ -2,7 +2,7 @@ import { EASE } from '@/components/react/motion-primitives'
 import { DOCUMENTS } from '@/consts'
 import { parcours } from '@/data/parcours'
 import { cn } from '@/lib/utils'
-import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
+import { AnimatePresence, motion, useScroll, useSpring, MotionConfig } from 'framer-motion'
 import {
   Award,
   Briefcase,
@@ -167,7 +167,7 @@ function Collapsible({
   )
 }
 
-export default function Parcours() {
+function ParcoursContent() {
   const [tab, setTab] = useState<TabId>('experience')
   const [openId, setOpenId] = useState<string | null>('experience-1')
   const trackRef = useRef<HTMLDivElement>(null)
@@ -467,5 +467,17 @@ export default function Parcours() {
         </a>
       </div>
     </div>
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion` for every animation in this island:
+ * framer skips transform and layout animations, opacity fades stay.
+ */
+export default function Parcours() {
+  return (
+    <MotionConfig reducedMotion="user">
+      <ParcoursContent />
+    </MotionConfig>
   )
 }

@@ -18,6 +18,7 @@ import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
 
 import tailwindcss from '@tailwindcss/vite'
 
+import { rehypeShiftHeadings } from './src/lib/rehype-shift-headings'
 import { SITE_URL } from './src/site.config'
 
 export default defineConfig({
@@ -87,6 +88,8 @@ export default defineConfig({
   markdown: {
     syntaxHighlight: false,
     rehypePlugins: [
+      // Runs first so heading ids and the table of contents see the final levels.
+      rehypeShiftHeadings,
       [
         rehypeExternalLinks,
         {

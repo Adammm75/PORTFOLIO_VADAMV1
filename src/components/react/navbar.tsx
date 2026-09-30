@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 import Logo from '@/components/ui/logo'
 import ThemeSwitch from '@/components/react/theme-switch'
 import { EASE } from '@/components/react/motion-primitives'
-import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
+import { AnimatePresence, motion, useScroll, useSpring, MotionConfig } from 'framer-motion'
 import { ArrowUpRight, Command, Menu, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -11,7 +11,7 @@ const SECTION_IDS = NAV_LINKS.map((link) => link.sectionId).filter(
   (id): id is string => Boolean(id),
 )
 
-export default function Navbar() {
+function NavbarContent() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState<string | null>(null)
@@ -277,5 +277,17 @@ export default function Navbar() {
         )}
       </AnimatePresence>
     </>
+  )
+}
+
+/**
+ * Honours `prefers-reduced-motion` for every animation in this island:
+ * framer skips transform and layout animations, opacity fades stay.
+ */
+export default function Navbar() {
+  return (
+    <MotionConfig reducedMotion="user">
+      <NavbarContent />
+    </MotionConfig>
   )
 }
